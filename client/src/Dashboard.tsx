@@ -38,7 +38,7 @@ function Dashboard() {
       setLoadingMeetings(true);
 
       const response = await axios.get(
-        "http://127.0.0.1:5000/api/meetings/all"
+        "https://intellmeet-backend-u3jz.onrender.com/api/meetings/all"
       );
 
       setMeetings(response.data.meetings || []);
@@ -62,7 +62,7 @@ function Dashboard() {
       const token = localStorage.getItem("token");
 
       const response = await axios.get(
-        "http://127.0.0.1:5000/api/auth/profile",
+        "https://intellmeet-backend-u3jz.onrender.com/api/auth/profile",
         {
           headers: {
             Authorization: `Bearer ${token}`,

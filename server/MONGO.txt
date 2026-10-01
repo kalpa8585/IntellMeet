@@ -1,0 +1,1 @@
+mongodb+srv://<db_username>:<db_password>@intellmeet.gmb9ivw.mongodb.net/?appName=IntellMeet

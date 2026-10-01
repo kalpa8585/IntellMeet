@@ -32,7 +32,7 @@ function MeetingRoom({
   // SOCKET.IO CONNECTION
   useEffect(() => {
 
-    const newSocket = io("http://127.0.0.1:5000");
+    const newSocket = io("https://intellmeet-backend-u3jz.onrender.com");
 
     setSocket(newSocket);
 
@@ -118,7 +118,7 @@ function MeetingRoom({
       setAiSummary("");
 
       const response = await axios.post(
-        "http://127.0.0.1:5000/api/ai/summarize",
+        "https://intellmeet-backend-u3jz.onrender.com/api/ai/summarize",
         {
           meetingNotes: meetingNotes
         }

@@ -18,7 +18,7 @@ function App() {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:5000/api/auth/login",
+        "https://intellmeet-backend-u3jz.onrender.com/api/auth/login",
         {
           email,
           password,
@@ -47,7 +47,7 @@ function App() {
 
     try {
       await axios.post(
-        "http://127.0.0.1:5000/api/auth/register",
+        "https://intellmeet-backend-u3jz.onrender.com/api/auth/register",
         {
           name,
           email,

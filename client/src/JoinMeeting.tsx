@@ -20,7 +20,7 @@ function JoinMeeting() {
 
     try {
       const response = await axios.get(
-        `http://127.0.0.1:5000/api/meetings/${id}`
+        `https://intellmeet-backend-u3jz.onrender.com/api/meetings/${id}`
       );
 
       console.log("Meeting response:", response.data);
