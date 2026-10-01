@@ -29,7 +29,7 @@ function CreateMeeting() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/meetings/create",
+        "https://intellmeet-backend-u3jz.onrender.com/api/meetings/create",
         {
           title,
           date,
