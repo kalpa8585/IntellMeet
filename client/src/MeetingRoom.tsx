@@ -8,310 +8,541 @@ interface MeetingRoomProps {
   meetingTitle: string;
 }
 
+interface Participant {
+  socketId: string;
+  name: string;
+  stream?: MediaStream;
+}
+
+const BACKEND_URL =
+  "https://intellmeet-backend-u3jz.onrender.com";
+
 function MeetingRoom({
   meetingId,
-  meetingTitle
+  meetingTitle,
 }: MeetingRoomProps) {
-
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
-
-  const [micOn, setMicOn] = useState(true);
-  const [cameraOn, setCameraOn] = useState(true);
-
-  const [screenSharing, setScreenSharing] = useState(false);
-
-  const [leftMeeting, setLeftMeeting] = useState(false);
-
-  const [meetingNotes, setMeetingNotes] = useState("");
-  const [aiSummary, setAiSummary] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-
   const [socket, setSocket] = useState<Socket | null>(null);
 
-  const [mediaError, setMediaError] = useState("");
+  const [participants, setParticipants] =
+    useState<Participant[]>([]);
 
-  const [remoteConnected, setRemoteConnected] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+  const [messages, setMessages] =
+    useState<string[]>([]);
 
-  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const [micOn, setMicOn] = useState(true);
 
-  const peerConnectionRef =
-    useRef<RTCPeerConnection | null>(null);
+  const [cameraOn, setCameraOn] =
+    useState(true);
 
-  const targetSocketIdRef =
-    useRef<string | null>(null);
+  const [screenSharing, setScreenSharing] =
+    useState(false);
+
+  const [mediaError, setMediaError] =
+    useState("");
+
+  const [leftMeeting, setLeftMeeting] =
+    useState(false);
+
+  const [meetingNotes, setMeetingNotes] =
+    useState("");
+
+  const [aiSummary, setAiSummary] =
+    useState("");
+
+  const [aiLoading, setAiLoading] =
+    useState(false);
+
+  const [connectionStatus, setConnectionStatus] =
+    useState("Connecting...");
+
+  const localVideoRef =
+    useRef<HTMLVideoElement | null>(null);
+
+  const mediaStreamRef =
+    useRef<MediaStream | null>(null);
+
+  const screenStreamRef =
+    useRef<MediaStream | null>(null);
+
+  const socketRef =
+    useRef<Socket | null>(null);
+
+  const peerConnectionsRef =
+    useRef<Map<string, RTCPeerConnection>>(
+      new Map()
+    );
+
+  const remoteStreamsRef =
+    useRef<Map<string, MediaStream>>(
+      new Map()
+    );
 
 
-  // =====================================================
-  // CAMERA + MICROPHONE
-  // =====================================================
+  /* =====================================================
+     PARTICIPANT COUNT
+  ===================================================== */
+
+  const participantCount =
+    participants.length + 1;
+
+
+  /* =====================================================
+     CAMERA + MICROPHONE
+  ===================================================== */
 
   useEffect(() => {
-
-    const startCameraAndMicrophone = async () => {
-
+    const startMedia = async () => {
       try {
-
         const stream =
           await navigator.mediaDevices.getUserMedia({
             video: true,
-            audio: true
+            audio: true,
           });
 
         mediaStreamRef.current = stream;
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject =
+            stream;
         }
 
         setMediaError("");
-
       } catch (error) {
-
         console.error(
-          "Camera/Microphone error:",
+          "Camera/microphone error:",
           error
         );
 
         setMediaError(
           "Camera or microphone permission was not granted."
         );
-
       }
-
     };
 
-    startCameraAndMicrophone();
-
+    startMedia();
 
     return () => {
-
       if (mediaStreamRef.current) {
-
         mediaStreamRef.current
           .getTracks()
-          .forEach((track) => {
-            track.stop();
-          });
-
+          .forEach((track) => track.stop());
       }
-
     };
-
   }, []);
 
 
-  // =====================================================
-  // WEBRTC + SOCKET.IO
-  // =====================================================
+  /* =====================================================
+     ADD PARTICIPANT
+  ===================================================== */
+
+  const addParticipant = (
+    socketId: string,
+    name = "Participant"
+  ) => {
+    if (!socketId) {
+      return;
+    }
+
+    setParticipants((previous) => {
+      const exists = previous.some(
+        (participant) =>
+          participant.socketId === socketId
+      );
+
+      if (exists) {
+        return previous;
+      }
+
+      return [
+        ...previous,
+        {
+          socketId,
+          name,
+        },
+      ];
+    });
+  };
+
+
+  /* =====================================================
+     REMOVE PARTICIPANT
+  ===================================================== */
+
+  const removeParticipant = (
+    socketId: string
+  ) => {
+    setParticipants((previous) =>
+      previous.filter(
+        (participant) =>
+          participant.socketId !== socketId
+      )
+    );
+
+    remoteStreamsRef.current.delete(
+      socketId
+    );
+
+    const peer =
+      peerConnectionsRef.current.get(
+        socketId
+      );
+
+    if (peer) {
+      peer.close();
+    }
+
+    peerConnectionsRef.current.delete(
+      socketId
+    );
+  };
+
+
+  /* =====================================================
+     CREATE PEER CONNECTION
+  ===================================================== */
+
+  const createPeerConnection = (
+    targetSocketId: string,
+    currentSocket: Socket
+  ) => {
+    const existing =
+      peerConnectionsRef.current.get(
+        targetSocketId
+      );
+
+    if (existing) {
+      return existing;
+    }
+
+    const peerConnection =
+      new RTCPeerConnection({
+        iceServers: [
+          {
+            urls:
+              "stun:stun.l.google.com:19302",
+          },
+        ],
+      });
+
+    peerConnectionsRef.current.set(
+      targetSocketId,
+      peerConnection
+    );
+
+
+    /* LOCAL TRACKS */
+
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current
+        .getTracks()
+        .forEach((track) => {
+          peerConnection.addTrack(
+            track,
+            mediaStreamRef.current!
+          );
+        });
+    }
+
+
+    /* REMOTE TRACKS */
+
+    peerConnection.ontrack = (
+      event
+    ) => {
+      const remoteStream =
+        event.streams[0];
+
+      if (!remoteStream) {
+        return;
+      }
+
+      remoteStreamsRef.current.set(
+        targetSocketId,
+        remoteStream
+      );
+
+      setParticipants((previous) =>
+        previous.map(
+          (participant) =>
+            participant.socketId ===
+            targetSocketId
+              ? {
+                  ...participant,
+                  stream:
+                    remoteStream,
+                }
+              : participant
+        )
+      );
+    };
+
+
+    /* ICE CANDIDATES */
+
+    peerConnection.onicecandidate =
+      (event) => {
+        if (event.candidate) {
+          currentSocket.emit(
+            "webrtcIceCandidate",
+            {
+              target:
+                targetSocketId,
+              candidate:
+                event.candidate,
+            }
+          );
+        }
+      };
+
+
+    /* CONNECTION STATUS */
+
+    peerConnection.onconnectionstatechange =
+      () => {
+        const state =
+          peerConnection.connectionState;
+
+        console.log(
+          `Connection with ${targetSocketId}:`,
+          state
+        );
+
+        if (
+          state === "failed" ||
+          state === "closed"
+        ) {
+          removeParticipant(
+            targetSocketId
+          );
+        }
+      };
+
+    return peerConnection;
+  };
+
+
+  /* =====================================================
+     CREATE OFFER
+  ===================================================== */
+
+  const createOfferForParticipant = async (
+    targetSocketId: string,
+    currentSocket: Socket
+  ) => {
+    const peerConnection =
+      createPeerConnection(
+        targetSocketId,
+        currentSocket
+      );
+
+    try {
+      const offer =
+        await peerConnection.createOffer();
+
+      await peerConnection.setLocalDescription(
+        offer
+      );
+
+      currentSocket.emit(
+        "webrtcOffer",
+        {
+          target:
+            targetSocketId,
+          offer,
+        }
+      );
+
+      console.log(
+        "Offer sent to:",
+        targetSocketId
+      );
+    } catch (error) {
+      console.error(
+        "Offer creation error:",
+        error
+      );
+    }
+  };
+
+
+  /* =====================================================
+     SOCKET.IO + WEBRTC
+  ===================================================== */
 
   useEffect(() => {
+    const newSocket =
+      io(BACKEND_URL, {
+        transports: [
+          "websocket",
+          "polling",
+        ],
+      });
 
-    const newSocket = io(
-      "https://intellmeet-backend-u3jz.onrender.com"
-    );
+    socketRef.current =
+      newSocket;
 
     setSocket(newSocket);
 
 
-    // -----------------------------------------------------
-    // CREATE PEER CONNECTION
-    // -----------------------------------------------------
-
-    const createPeerConnection = (
-      targetSocketId: string
-    ) => {
-
-      targetSocketIdRef.current =
-        targetSocketId;
-
-
-      if (peerConnectionRef.current) {
-
-        peerConnectionRef.current.close();
-
-      }
-
-
-      const peerConnection =
-        new RTCPeerConnection({
-          iceServers: [
-            {
-              urls:
-                "stun:stun.l.google.com:19302"
-            }
-          ]
-        });
-
-
-      peerConnectionRef.current =
-        peerConnection;
-
-
-      // ---------------------------------------------------
-      // ADD LOCAL CAMERA + MICROPHONE
-      // ---------------------------------------------------
-
-      if (mediaStreamRef.current) {
-
-        mediaStreamRef.current
-          .getTracks()
-          .forEach((track) => {
-
-            peerConnection.addTrack(
-              track,
-              mediaStreamRef.current!
-            );
-
-          });
-
-      }
-
-
-      // ---------------------------------------------------
-      // RECEIVE REMOTE VIDEO + AUDIO
-      // ---------------------------------------------------
-
-      peerConnection.ontrack = (event) => {
-
-        console.log(
-          "Remote participant media received."
-        );
-
-        if (remoteVideoRef.current) {
-
-          remoteVideoRef.current.srcObject =
-            event.streams[0];
-
-        }
-
-        setRemoteConnected(true);
-
-      };
-
-
-      // ---------------------------------------------------
-      // ICE CANDIDATES
-      // ---------------------------------------------------
-
-      peerConnection.onicecandidate = (
-        event
-      ) => {
-
-        if (
-          event.candidate &&
-          targetSocketIdRef.current
-        ) {
-
-          newSocket.emit(
-            "webrtcIceCandidate",
-            {
-              target:
-                targetSocketIdRef.current,
-
-              candidate:
-                event.candidate
-            }
-          );
-
-        }
-
-      };
-
-
-      return peerConnection;
-
-    };
-
-
-    // =====================================================
-    // NEW PARTICIPANT JOINED
-    // =====================================================
+    /* CONNECT */
 
     newSocket.on(
-      "participantJoined",
-      async (data) => {
-
+      "connect",
+      () => {
         console.log(
-          "New participant joined:",
-          data.socketId
+          "Connected to IntellMeet:",
+          newSocket.id
         );
 
+        setConnectionStatus(
+          "Connected"
+        );
 
-        const peerConnection =
-          createPeerConnection(
-            data.socketId
-          );
-
-
-        try {
-
-          const offer =
-            await peerConnection.createOffer();
-
-          await peerConnection.setLocalDescription(
-            offer
-          );
-
-
-          newSocket.emit(
-            "webrtcOffer",
-            {
-              target:
-                data.socketId,
-
-              offer
-            }
-          );
-
-
-          console.log(
-            "WebRTC offer sent."
-          );
-
-        } catch (error) {
-
-          console.error(
-            "Error creating WebRTC offer:",
-            error
-          );
-
-        }
-
+        newSocket.emit(
+          "joinMeeting",
+          meetingId
+        );
       }
     );
 
 
-    // =====================================================
-    // RECEIVE WEBRTC OFFER
-    // =====================================================
+    /* CONNECTION ERROR */
+
+    newSocket.on(
+      "connect_error",
+      (error) => {
+        console.error(
+          "Socket connection error:",
+          error
+        );
+
+        setConnectionStatus(
+          "Connection error"
+        );
+      }
+    );
+
+
+    /* DISCONNECT */
+
+    newSocket.on(
+      "disconnect",
+      () => {
+        console.log(
+          "Disconnected from IntellMeet"
+        );
+
+        setConnectionStatus(
+          "Disconnected"
+        );
+      }
+    );
+
+
+    /* =================================================
+       EXISTING PARTICIPANTS
+
+       The NEW participant receives the IDs of
+       people already inside the meeting.
+    ================================================= */
+
+    newSocket.on(
+      "existingParticipants",
+      async (data) => {
+        const existingParticipants =
+          data?.participants || [];
+
+        console.log(
+          "Existing participants:",
+          existingParticipants
+        );
+
+        for (
+          const participantId of
+          existingParticipants
+        ) {
+          addParticipant(
+            participantId
+          );
+
+          await createOfferForParticipant(
+            participantId,
+            newSocket
+          );
+        }
+      }
+    );
+
+
+    /* =================================================
+       NEW PARTICIPANT JOINED
+
+       Existing participants only add the new
+       participant to their participant list.
+
+       They DO NOT create another offer.
+       This avoids duplicate WebRTC offers.
+    ================================================= */
+
+    newSocket.on(
+      "participantJoined",
+      (data) => {
+        const targetSocketId =
+          data?.socketId;
+
+        if (!targetSocketId) {
+          return;
+        }
+
+        console.log(
+          "New participant joined:",
+          targetSocketId
+        );
+
+        addParticipant(
+          targetSocketId
+        );
+      }
+    );
+
+
+    /* =================================================
+       WEBRTC OFFER
+    ================================================= */
 
     newSocket.on(
       "webrtcOffer",
       async (data) => {
+        const sender =
+          data?.sender;
+
+        if (!sender || !data?.offer) {
+          return;
+        }
 
         console.log(
-          "WebRTC offer received."
+          "WebRTC offer received from:",
+          sender
         );
 
+        addParticipant(
+          sender
+        );
 
         const peerConnection =
           createPeerConnection(
-            data.sender
+            sender,
+            newSocket
           );
 
-
         try {
-
           await peerConnection.setRemoteDescription(
             new RTCSessionDescription(
               data.offer
             )
           );
-
 
           const answer =
             await peerConnection.createAnswer();
@@ -320,218 +551,172 @@ function MeetingRoom({
             answer
           );
 
-
           newSocket.emit(
             "webrtcAnswer",
             {
               target:
-                data.sender,
-
-              answer
+                sender,
+              answer,
             }
           );
 
-
-          console.log(
-            "WebRTC answer sent."
-          );
-
         } catch (error) {
-
           console.error(
-            "Error handling WebRTC offer:",
+            "Offer handling error:",
             error
           );
-
         }
-
       }
     );
 
 
-    // =====================================================
-    // RECEIVE WEBRTC ANSWER
-    // =====================================================
+    /* =================================================
+       WEBRTC ANSWER
+    ================================================= */
 
     newSocket.on(
       "webrtcAnswer",
       async (data) => {
+        const sender =
+          data?.sender;
 
-        console.log(
-          "WebRTC answer received."
-        );
-
-
-        try {
-
-          if (
-            peerConnectionRef.current
-          ) {
-
-            await peerConnectionRef.current
-              .setRemoteDescription(
-                new RTCSessionDescription(
-                  data.answer
-                )
-              );
-
-          }
-
-        } catch (error) {
-
-          console.error(
-            "Error setting WebRTC answer:",
-            error
-          );
-
+        if (!sender || !data?.answer) {
+          return;
         }
 
+        const peerConnection =
+          peerConnectionsRef.current.get(
+            sender
+          );
+
+        if (!peerConnection) {
+          return;
+        }
+
+        try {
+          await peerConnection.setRemoteDescription(
+            new RTCSessionDescription(
+              data.answer
+            )
+          );
+
+        } catch (error) {
+          console.error(
+            "Answer handling error:",
+            error
+          );
+        }
       }
     );
 
 
-    // =====================================================
-    // RECEIVE ICE CANDIDATE
-    // =====================================================
+    /* =================================================
+       ICE CANDIDATE
+    ================================================= */
 
     newSocket.on(
       "webrtcIceCandidate",
       async (data) => {
+        const sender =
+          data?.sender;
 
-        console.log(
-          "WebRTC ICE candidate received."
-        );
-
-
-        try {
-
-          if (
-            peerConnectionRef.current
-          ) {
-
-            await peerConnectionRef.current
-              .addIceCandidate(
-                new RTCIceCandidate(
-                  data.candidate
-                )
-              );
-
-          }
-
-        } catch (error) {
-
-          console.error(
-            "Error adding ICE candidate:",
-            error
-          );
-
+        if (
+          !sender ||
+          !data?.candidate
+        ) {
+          return;
         }
 
+        const peerConnection =
+          peerConnectionsRef.current.get(
+            sender
+          );
+
+        if (!peerConnection) {
+          return;
+        }
+
+        try {
+          await peerConnection.addIceCandidate(
+            new RTCIceCandidate(
+              data.candidate
+            )
+          );
+
+        } catch (error) {
+          console.error(
+            "ICE candidate error:",
+            error
+          );
+        }
       }
     );
 
 
-    // =====================================================
-    // PARTICIPANT LEFT
-    // =====================================================
+    /* =================================================
+       PARTICIPANT LEFT
+    ================================================= */
 
     newSocket.on(
       "participantLeft",
-      () => {
-
+      (data) => {
         console.log(
-          "Remote participant left."
+          "Participant left:",
+          data?.socketId
         );
 
-
-        setRemoteConnected(false);
-
-
-        if (
-          remoteVideoRef.current
-        ) {
-
-          remoteVideoRef.current.srcObject =
-            null;
-
+        if (data?.socketId) {
+          removeParticipant(
+            data.socketId
+          );
         }
-
-
-        if (
-          peerConnectionRef.current
-        ) {
-
-          peerConnectionRef.current.close();
-
-          peerConnectionRef.current =
-            null;
-
-        }
-
-        targetSocketIdRef.current =
-          null;
-
       }
     );
 
 
-    // =====================================================
-    // CHAT
-    // =====================================================
+    /* =================================================
+       CHAT
+    ================================================= */
 
     newSocket.on(
       "receiveMessage",
       (data) => {
-
-        const newMessage =
-          `${data.sender}: ${data.message}`;
-
         setMessages(
-          (previousMessages) => [
-            ...previousMessages,
-            newMessage
+          (previous) => [
+            ...previous,
+            `${data.sender}: ${data.message}`,
           ]
         );
-
       }
     );
 
 
-    // =====================================================
-    // USER JOINED MESSAGE
-    // =====================================================
+    /* =================================================
+       USER JOINED MESSAGE
+    ================================================= */
 
     newSocket.on(
       "userJoined",
       (data) => {
+        if (!data?.message) {
+          return;
+        }
 
         setMessages(
-          (previousMessages) => [
-            ...previousMessages,
-            `System: ${data.message}`
+          (previous) => [
+            ...previous,
+            `System: ${data.message}`,
           ]
         );
-
       }
     );
 
 
-    // =====================================================
-    // JOIN MEETING
-    // =====================================================
-
-    newSocket.emit(
-      "joinMeeting",
-      meetingId
-    );
-
-
-    // =====================================================
-    // CLEANUP
-    // =====================================================
+    /* =================================================
+       CLEANUP
+    ================================================= */
 
     return () => {
-
       newSocket.emit(
         "leaveMeeting",
         meetingId
@@ -539,29 +724,25 @@ function MeetingRoom({
 
       newSocket.disconnect();
 
+      peerConnectionsRef.current.forEach(
+        (peer) => {
+          peer.close();
+        }
+      );
 
-      if (
-        peerConnectionRef.current
-      ) {
+      peerConnectionsRef.current.clear();
 
-        peerConnectionRef.current.close();
-
-        peerConnectionRef.current =
-          null;
-
-      }
-
+      remoteStreamsRef.current.clear();
     };
 
   }, [meetingId]);
 
 
-  // =====================================================
-  // MICROPHONE TOGGLE
-  // =====================================================
+  /* =====================================================
+     MICROPHONE
+  ===================================================== */
 
   const toggleMicrophone = () => {
-
     const stream =
       mediaStreamRef.current;
 
@@ -572,28 +753,27 @@ function MeetingRoom({
     const audioTracks =
       stream.getAudioTracks();
 
-    audioTracks.forEach((track) => {
-
-      track.enabled =
-        !track.enabled;
-
-    });
+    audioTracks.forEach(
+      (track) => {
+        track.enabled =
+          !track.enabled;
+      }
+    );
 
     setMicOn(
       audioTracks.some(
-        (track) => track.enabled
+        (track) =>
+          track.enabled
       )
     );
-
   };
 
 
-  // =====================================================
-  // CAMERA TOGGLE
-  // =====================================================
+  /* =====================================================
+     CAMERA
+  ===================================================== */
 
   const toggleCamera = () => {
-
     const stream =
       mediaStreamRef.current;
 
@@ -604,178 +784,292 @@ function MeetingRoom({
     const videoTracks =
       stream.getVideoTracks();
 
-    videoTracks.forEach((track) => {
-
-      track.enabled =
-        !track.enabled;
-
-    });
+    videoTracks.forEach(
+      (track) => {
+        track.enabled =
+          !track.enabled;
+      }
+    );
 
     setCameraOn(
       videoTracks.some(
-        (track) => track.enabled
+        (track) =>
+          track.enabled
       )
     );
-
   };
 
 
-  // =====================================================
-  // CHAT MESSAGE
-  // =====================================================
+  /* =====================================================
+     SCREEN SHARING
+  ===================================================== */
+
+  const toggleScreenSharing =
+    async () => {
+      try {
+        if (screenSharing) {
+          await stopScreenSharing();
+          return;
+        }
+
+        const screenStream =
+          await navigator.mediaDevices.getDisplayMedia(
+            {
+              video: true,
+              audio: true,
+            }
+          );
+
+        screenStreamRef.current =
+          screenStream;
+
+        const screenTrack =
+          screenStream
+            .getVideoTracks()[0];
+
+        peerConnectionsRef.current.forEach(
+          async (peerConnection) => {
+            const sender =
+              peerConnection
+                .getSenders()
+                .find(
+                  (item) =>
+                    item.track?.kind ===
+                    "video"
+                );
+
+            if (sender) {
+              await sender.replaceTrack(
+                screenTrack
+              );
+            }
+          }
+        );
+
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject =
+            screenStream;
+        }
+
+        setScreenSharing(true);
+
+        screenTrack.onended =
+          () => {
+            stopScreenSharing();
+          };
+
+      } catch (error) {
+        console.error(
+          "Screen sharing error:",
+          error
+        );
+      }
+    };
+
+
+  /* =====================================================
+     STOP SCREEN SHARING
+  ===================================================== */
+
+  const stopScreenSharing =
+    async () => {
+      if (
+        screenStreamRef.current
+      ) {
+        screenStreamRef.current
+          .getTracks()
+          .forEach(
+            (track) =>
+              track.stop()
+          );
+
+        screenStreamRef.current =
+          null;
+      }
+
+      const cameraTrack =
+        mediaStreamRef.current
+          ?.getVideoTracks()[0];
+
+      if (cameraTrack) {
+        peerConnectionsRef.current.forEach(
+          async (peerConnection) => {
+            const sender =
+              peerConnection
+                .getSenders()
+                .find(
+                  (item) =>
+                    item.track?.kind ===
+                    "video"
+                );
+
+            if (sender) {
+              await sender.replaceTrack(
+                cameraTrack
+              );
+            }
+          }
+        );
+
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject =
+            mediaStreamRef.current;
+        }
+      }
+
+      setScreenSharing(false);
+    };
+
+
+  /* =====================================================
+     CHAT
+  ===================================================== */
 
   const sendMessage = () => {
-
     if (!message.trim()) {
       return;
     }
 
-    if (!socket) {
-
+    if (!socket?.connected) {
       alert(
         "Chat connection is not ready."
       );
 
       return;
-
     }
 
     socket.emit(
       "sendMessage",
       {
-        meetingId:
-          meetingId,
-
+        meetingId,
         message:
-          message,
-
+          message.trim(),
         sender:
-          "Kalpana Test"
+          "Kalpana",
       }
     );
 
     setMessage("");
-
   };
 
 
-  // =====================================================
-  // AI SUMMARY
-  // =====================================================
+  /* =====================================================
+     AI SUMMARY
+  ===================================================== */
 
-  const generateAISummary = async () => {
-
-    if (!meetingNotes.trim()) {
-
-      alert(
-        "Please enter some meeting notes first."
-      );
-
-      return;
-
-    }
-
-
-    try {
-
-      setAiLoading(true);
-
-      setAiSummary("");
-
-
-      const response =
-        await axios.post(
-          "https://intellmeet-backend-u3jz.onrender.com/api/ai/summarize",
-          {
-            meetingNotes:
-              meetingNotes
-          }
+  const generateAISummary =
+    async () => {
+      if (!meetingNotes.trim()) {
+        alert(
+          "Please enter meeting notes first."
         );
 
+        return;
+      }
 
-      setAiSummary(
-        response.data.result
-      );
+      try {
+        setAiLoading(true);
+        setAiSummary("");
 
-    } catch (error: any) {
+        const response =
+          await axios.post(
+            `${BACKEND_URL}/api/ai/summarize`,
+            {
+              meetingNotes:
+                meetingNotes,
+            }
+          );
 
-      console.error(
-        "AI Summary Error:",
-        error
-      );
+        setAiSummary(
+          response.data.result ||
+            "AI summary was generated."
+        );
+
+      } catch (error: any) {
+        console.error(
+          "AI Summary Error:",
+          error
+        );
+
+        setAiSummary(
+          error.response?.data
+            ?.message ||
+            "AI service is currently unavailable. Your meeting system is still working normally."
+        );
+
+      } finally {
+        setAiLoading(false);
+      }
+    };
 
 
-      alert(
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        "Unable to generate AI summary."
-      );
-
-    } finally {
-
-      setAiLoading(false);
-
-    }
-
-  };
-
-
-  // =====================================================
-  // LEAVE MEETING
-  // =====================================================
+  /* =====================================================
+     LEAVE MEETING
+  ===================================================== */
 
   const leaveMeeting = () => {
-
-    if (mediaStreamRef.current) {
-
-      mediaStreamRef.current
+    if (
+      screenStreamRef.current
+    ) {
+      screenStreamRef.current
         .getTracks()
-        .forEach((track) => {
-          track.stop();
-        });
-
+        .forEach(
+          (track) =>
+            track.stop()
+        );
     }
-
 
     if (
-      peerConnectionRef.current
+      mediaStreamRef.current
     ) {
-
-      peerConnectionRef.current.close();
-
-      peerConnectionRef.current =
-        null;
-
+      mediaStreamRef.current
+        .getTracks()
+        .forEach(
+          (track) =>
+            track.stop()
+        );
     }
 
+    peerConnectionsRef.current.forEach(
+      (peer) => peer.close()
+    );
+
+    peerConnectionsRef.current.clear();
+
+    if (socketRef.current) {
+      socketRef.current.emit(
+        "leaveMeeting",
+        meetingId
+      );
+
+      socketRef.current.disconnect();
+    }
 
     setLeftMeeting(true);
-
   };
 
 
-  // =====================================================
-  // RETURN TO DASHBOARD
-  // =====================================================
+  /* =====================================================
+     RETURN TO DASHBOARD
+  ===================================================== */
 
   if (leftMeeting) {
-
     return <Dashboard />;
-
   }
 
 
+  /* =====================================================
+     RENDER
+  ===================================================== */
+
   return (
-
     <div className="meeting-room">
-
 
       {/* HEADER */}
 
       <div className="meeting-room-header">
 
         <div>
-
           <h1>
             {meetingTitle}
           </h1>
@@ -783,111 +1077,217 @@ function MeetingRoom({
           <p>
             Meeting ID: {meetingId}
           </p>
-
         </div>
 
-
-        <button
-          className="leave-button"
-          onClick={leaveMeeting}
+        <div
+          style={{
+            display:
+              "flex",
+            alignItems:
+              "center",
+            gap:
+              "15px",
+          }}
         >
-          Leave Meeting
-        </button>
 
+          <span
+            style={{
+              padding:
+                "7px 12px",
+              borderRadius:
+                "999px",
+              background:
+                connectionStatus ===
+                "Connected"
+                  ? "#dcfce7"
+                  : "#fef3c7",
+              color:
+                connectionStatus ===
+                "Connected"
+                  ? "#166534"
+                  : "#92400e",
+              fontSize:
+                "13px",
+              fontWeight:
+                700,
+            }}
+          >
+            ● {connectionStatus}
+          </span>
+
+          <span
+            style={{
+              padding:
+                "7px 12px",
+              borderRadius:
+                "999px",
+              background:
+                "#eef2ff",
+              color:
+                "#4f46e5",
+              fontSize:
+                "13px",
+              fontWeight:
+                700,
+            }}
+          >
+            👥 {participantCount}{" "}
+            participant
+            {participantCount !== 1
+              ? "s"
+              : ""}
+          </span>
+
+          <button
+            className="leave-button"
+            onClick={
+              leaveMeeting
+            }
+          >
+            Leave Meeting
+          </button>
+
+        </div>
       </div>
 
 
-      {/* MEETING AREA */}
+      {/* MAIN CONTENT */}
 
       <div className="meeting-room-content">
-
 
         {/* VIDEO AREA */}
 
         <div className="video-section">
 
-
-          {/* LOCAL VIDEO */}
-
           <h2>
-            Your Video
+            Meeting Participants
           </h2>
 
-          <div className="video-placeholder">
+          <div
+            style={{
+              display:
+                "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(260px, 1fr))",
+              gap:
+                "15px",
+            }}
+          >
 
-            {cameraOn ? (
+            {/* LOCAL VIDEO */}
+
+            <div
+              style={{
+                position:
+                  "relative",
+                background:
+                  "#030712",
+                borderRadius:
+                  "12px",
+                overflow:
+                  "hidden",
+                minHeight:
+                  "220px",
+              }}
+            >
 
               <video
-                ref={videoRef}
+                ref={
+                  localVideoRef
+                }
                 autoPlay
                 muted
                 playsInline
                 style={{
-                  width: "100%",
-                  height: "350px",
-                  objectFit: "cover",
-                  borderRadius: "12px",
-                  background: "#030712"
+                  width:
+                    "100%",
+                  height:
+                    "250px",
+                  objectFit:
+                    "cover",
+                  display:
+                    cameraOn ||
+                    screenSharing
+                      ? "block"
+                      : "none",
                 }}
               />
 
-            ) : (
+              {!cameraOn &&
+                !screenSharing && (
+                  <div
+                    style={{
+                      height:
+                        "250px",
+                      display:
+                        "flex",
+                      alignItems:
+                        "center",
+                      justifyContent:
+                        "center",
+                      color:
+                        "white",
+                      flexDirection:
+                        "column",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize:
+                          "40px",
+                      }}
+                    >
+                      👤
+                    </div>
 
-              <>
-                <h2>
-                  📷 Camera Off
-                </h2>
+                    <strong>
+                      Camera Off
+                    </strong>
+                  </div>
+                )}
 
-                <p>
-                  Your camera is currently turned off.
-                </p>
-              </>
-
-            )}
-
-          </div>
-
-
-          {/* REMOTE VIDEO */}
-
-          <h2
-            style={{
-              marginTop: "25px"
-            }}
-          >
-            Other Participant
-          </h2>
-
-          <div className="video-placeholder">
-
-            {remoteConnected ? (
-
-              <video
-                ref={remoteVideoRef}
-                autoPlay
-                playsInline
+              <div
                 style={{
-                  width: "100%",
-                  height: "350px",
-                  objectFit: "cover",
-                  borderRadius: "12px",
-                  background: "#030712"
+                  position:
+                    "absolute",
+                  bottom:
+                    "10px",
+                  left:
+                    "10px",
+                  background:
+                    "rgba(0,0,0,0.65)",
+                  color:
+                    "white",
+                  padding:
+                    "6px 10px",
+                  borderRadius:
+                    "7px",
+                  fontSize:
+                    "12px",
                 }}
-              />
+              >
+                You
+                {screenSharing
+                  ? " • Sharing screen"
+                  : ""}
+              </div>
 
-            ) : (
+            </div>
 
-              <>
-                <h2>
-                  👤 Waiting for participant
-                </h2>
 
-                <p>
-                  Another participant will appear here
-                  when they join this meeting.
-                </p>
-              </>
+            {/* REMOTE PARTICIPANTS */}
 
+            {participants.map(
+              (participant) => (
+                <RemoteVideo
+                  key={
+                    participant.socketId
+                  }
+                  participant={
+                    participant
+                  }
+                />
+              )
             )}
 
           </div>
@@ -896,18 +1296,24 @@ function MeetingRoom({
           {/* MEDIA ERROR */}
 
           {mediaError && (
-
             <div
               style={{
-                marginTop: "15px",
-                padding: "12px",
-                background: "#7f1d1d",
-                borderRadius: "8px"
+                marginTop:
+                  "15px",
+                padding:
+                  "12px",
+                background:
+                  "#fee2e2",
+                color:
+                  "#991b1b",
+                borderRadius:
+                  "8px",
+                fontSize:
+                  "13px",
               }}
             >
               {mediaError}
             </div>
-
           )}
 
 
@@ -915,40 +1321,45 @@ function MeetingRoom({
 
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "12px",
-              marginTop: "20px",
-              flexWrap: "wrap"
+              display:
+                "flex",
+              justifyContent:
+                "center",
+              gap:
+                "10px",
+              marginTop:
+                "20px",
+              flexWrap:
+                "wrap",
             }}
           >
 
             <button
               className="create-meeting-button"
-              onClick={toggleMicrophone}
+              onClick={
+                toggleMicrophone
+              }
             >
               {micOn
                 ? "🎤 Mute"
                 : "🔇 Unmute"}
             </button>
 
-
             <button
               className="create-meeting-button"
-              onClick={toggleCamera}
+              onClick={
+                toggleCamera
+              }
             >
               {cameraOn
                 ? "📹 Camera Off"
                 : "📷 Camera On"}
             </button>
 
-
             <button
               className="create-meeting-button"
-              onClick={() =>
-                setScreenSharing(
-                  !screenSharing
-                )
+              onClick={
+                toggleScreenSharing
               }
             >
               {screenSharing
@@ -959,44 +1370,49 @@ function MeetingRoom({
           </div>
 
 
-          {/* SCREEN SHARING STATUS */}
-
-          {screenSharing && (
-
-            <div
-              style={{
-                marginTop: "15px",
-                padding: "12px",
-                background: "#374151",
-                borderRadius: "8px",
-                textAlign: "center"
-              }}
-            >
-              Screen sharing is active.
-            </div>
-
-          )}
-
-
           {/* PARTICIPANTS */}
 
           <div className="participants-section">
 
             <h2>
-              Participants
+              Participants (
+              {participantCount})
             </h2>
 
-            <div className="participant-card">
-
+            <div
+              className="participant-card"
+            >
               <strong>
-                Kalpana Test
+                You
               </strong>
 
               <span>
                 Host
               </span>
-
             </div>
+
+            {participants.map(
+              (participant) => (
+                <div
+                  key={
+                    participant.socketId
+                  }
+                  className="participant-card"
+                  style={{
+                    marginTop:
+                      "8px",
+                  }}
+                >
+                  <strong>
+                    {participant.name}
+                  </strong>
+
+                  <span>
+                    Participant
+                  </span>
+                </div>
+              )
+            )}
 
           </div>
 
@@ -1011,30 +1427,29 @@ function MeetingRoom({
             Meeting Chat
           </h2>
 
-
           <div className="chat-messages">
 
-            {messages.length === 0 ? (
-
+            {messages.length ===
+            0 ? (
               <p className="empty-chat">
                 No messages yet.
               </p>
-
             ) : (
-
               messages.map(
-                (msg, index) => (
-
+                (
+                  msg,
+                  index
+                ) => (
                   <div
                     className="chat-message"
-                    key={index}
+                    key={
+                      index
+                    }
                   >
                     {msg}
                   </div>
-
                 )
               )
-
             )}
 
           </div>
@@ -1045,22 +1460,34 @@ function MeetingRoom({
             <input
               type="text"
               placeholder="Type a message..."
-              value={message}
-              onChange={(e) =>
-                setMessage(e.target.value)
+              value={
+                message
               }
-              onKeyDown={(e) => {
-
-                if (e.key === "Enter") {
+              onChange={(
+                event
+              ) =>
+                setMessage(
+                  event
+                    .target
+                    .value
+                )
+              }
+              onKeyDown={(
+                event
+              ) => {
+                if (
+                  event.key ===
+                  "Enter"
+                ) {
                   sendMessage();
                 }
-
               }}
             />
 
-
             <button
-              onClick={sendMessage}
+              onClick={
+                sendMessage
+              }
             >
               Send
             </button>
@@ -1080,69 +1507,88 @@ function MeetingRoom({
           🤖 AI Meeting Assistant
         </h2>
 
-
         <p>
-          Enter your meeting notes below and let
-          the local AI generate a summary and
+          Add your meeting notes and
+          generate a summary with
           action items.
         </p>
 
-
         <div
           style={{
-            marginTop: "20px"
+            marginTop:
+              "20px",
           }}
         >
 
           <label
             style={{
-              display: "block",
-              marginBottom: "8px",
-              fontWeight: "bold"
+              display:
+                "block",
+              marginBottom:
+                "8px",
+              fontWeight:
+                "bold",
             }}
           >
             Meeting Notes
           </label>
 
-
           <textarea
-            value={meetingNotes}
-            onChange={(e) =>
-              setMeetingNotes(e.target.value)
+            value={
+              meetingNotes
+            }
+            onChange={(
+              event
+            ) =>
+              setMeetingNotes(
+                event
+                  .target
+                  .value
+              )
             }
             placeholder="Enter important points discussed during the meeting..."
             style={{
-              width: "100%",
-              minHeight: "150px",
-              padding: "12px",
-              borderRadius: "8px",
-              border: "1px solid #6b7280",
-              background: "#111827",
-              color: "white",
-              resize: "vertical"
+              width:
+                "100%",
+              minHeight:
+                "150px",
+              padding:
+                "12px",
+              borderRadius:
+                "8px",
+              border:
+                "1px solid #6b7280",
+              background:
+                "#111827",
+              color:
+                "white",
+              resize:
+                "vertical",
             }}
           />
 
         </div>
 
-
         <button
           className="create-meeting-button"
-          onClick={generateAISummary}
-          disabled={aiLoading}
+          onClick={
+            generateAISummary
+          }
+          disabled={
+            aiLoading
+          }
         >
           {aiLoading
             ? "🤖 Generating..."
             : "✨ Generate AI Summary"}
         </button>
 
-
         {aiSummary && (
-
           <div
             className="ai-card"
             style={{
-              marginTop: "20px"
+              marginTop:
+                "20px",
             }}
           >
 
@@ -1152,22 +1598,155 @@ function MeetingRoom({
 
             <div
               style={{
-                whiteSpace: "pre-wrap"
+                whiteSpace:
+                  "pre-wrap",
               }}
             >
               {aiSummary}
             </div>
 
           </div>
-
         )}
 
       </div>
 
     </div>
-
   );
+}
 
+
+/* =========================================================
+   REMOTE VIDEO COMPONENT
+========================================================= */
+
+function RemoteVideo({
+  participant,
+}: {
+  participant: Participant;
+}) {
+  const videoRef =
+    useRef<HTMLVideoElement | null>(
+      null
+    );
+
+  useEffect(() => {
+    if (
+      videoRef.current &&
+      participant.stream
+    ) {
+      videoRef.current.srcObject =
+        participant.stream;
+    }
+  }, [
+    participant.stream,
+  ]);
+
+  return (
+    <div
+      style={{
+        position:
+          "relative",
+        background:
+          "#030712",
+        borderRadius:
+          "12px",
+        overflow:
+          "hidden",
+        minHeight:
+          "220px",
+      }}
+    >
+
+      {participant.stream ? (
+        <video
+          ref={
+            videoRef
+          }
+          autoPlay
+          playsInline
+          style={{
+            width:
+              "100%",
+            height:
+              "250px",
+            objectFit:
+              "cover",
+            display:
+              "block",
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            height:
+              "250px",
+            display:
+              "flex",
+            alignItems:
+              "center",
+            justifyContent:
+              "center",
+            color:
+              "white",
+            flexDirection:
+              "column",
+          }}
+        >
+
+          <div
+            style={{
+              fontSize:
+                "40px",
+            }}
+          >
+            👤
+          </div>
+
+          <strong>
+            {participant.name}
+          </strong>
+
+          <span
+            style={{
+              marginTop:
+                "5px",
+              color:
+                "#9ca3af",
+              fontSize:
+                "12px",
+            }}
+          >
+            Connecting...
+          </span>
+
+        </div>
+      )}
+
+      <div
+        style={{
+          position:
+            "absolute",
+          bottom:
+            "10px",
+          left:
+            "10px",
+          background:
+            "rgba(0,0,0,0.65)",
+          color:
+            "white",
+          padding:
+            "6px 10px",
+          borderRadius:
+            "7px",
+          fontSize:
+            "12px",
+        }}
+      >
+        {participant.name}
+      </div>
+
+    </div>
+  );
 }
 
 export default MeetingRoom;

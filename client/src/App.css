@@ -1,436 +1,1468 @@
+/* =========================================================
+   INTELLMEET - COMPLETE APPLICATION STYLES
+   ========================================================= */
+
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
 * {
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  width: 100%;
+}
+
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f7fb;
-  color: #1f2937;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+
+  background: #f5f7fb;
+  color: #111827;
 }
 
-
-/* =========================
-   DASHBOARD
-========================= */
-
-.dashboard {
-  display: flex;
-  min-height: 100vh;
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
-.sidebar {
-  width: 240px;
-  background: #111827;
-  color: white;
-  padding: 25px 15px;
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar-logo {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.sidebar-logo h2 {
-  margin: 0;
-}
-
-.sidebar-logo p {
-  margin: 5px 0 0;
-  font-size: 13px;
-  opacity: 0.7;
-}
-
-.sidebar nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sidebar nav button,
-.logout-button {
-  border: none;
-  padding: 12px;
-  border-radius: 8px;
-  background: transparent;
-  color: white;
-  text-align: left;
+button {
   cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+
+/* =========================================================
+   AUTHENTICATION PAGE
+   ========================================================= */
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  background: #ffffff;
+}
+
+
+/* LEFT BRAND AREA */
+
+.auth-brand {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(99, 102, 241, 0.35),
+      transparent 35%
+    ),
+    linear-gradient(
+      145deg,
+      #111827 0%,
+      #1e1b4b 45%,
+      #312e81 100%
+    );
+
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 70px;
+}
+
+.auth-brand-content {
+  max-width: 620px;
+  margin: auto;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+    135deg,
+    #6366f1,
+    #8b5cf6
+  );
+
+  color: white;
+  font-weight: 800;
+  box-shadow:
+    0 10px 30px rgba(99, 102, 241, 0.35);
+}
+
+.brand-message {
+  margin-top: 85px;
+}
+
+.brand-message h1 {
+  margin: 0;
+
+  font-size: clamp(42px, 5vw, 68px);
+  line-height: 1.04;
+  letter-spacing: -2.5px;
+}
+
+.brand-message p {
+  margin-top: 26px;
+  max-width: 540px;
+
+  font-size: 18px;
+  line-height: 1.7;
+
+  color: #cbd5e1;
+}
+
+.brand-features {
+  margin-top: 55px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.brand-feature {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.brand-feature > span {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.12);
+  color: #a5b4fc;
+  font-weight: 700;
+}
+
+.brand-feature strong {
+  display: block;
+  font-size: 16px;
+}
+
+.brand-feature p {
+  margin: 5px 0 0;
+  color: #94a3b8;
   font-size: 14px;
 }
 
-.sidebar nav button:hover,
-.sidebar nav button.active {
-  background: #2563eb;
+
+/* RIGHT AUTH AREA */
+
+.auth-panel {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px;
+  background: #ffffff;
 }
 
-.logout-button {
-  margin-top: auto;
-  background: #dc2626;
-  text-align: center;
+.auth-container {
+  width: 100%;
+  max-width: 440px;
 }
+
+.mobile-brand {
+  display: none;
+}
+
+.auth-box {
+  width: 100%;
+}
+
+.auth-heading {
+  margin-bottom: 35px;
+}
+
+.auth-heading h2 {
+  margin: 0;
+  font-size: 34px;
+  color: #111827;
+  letter-spacing: -1px;
+}
+
+.auth-heading p {
+  margin-top: 10px;
+  color: #6b7280;
+  font-size: 15px;
+}
+
+.form-group {
+  margin-bottom: 21px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  height: 50px;
+
+  padding: 0 15px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+
+  outline: none;
+
+  background: white;
+  color: #111827;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-group input:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
+}
+
+.auth-button {
+  width: 100%;
+  height: 52px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    135deg,
+    #4f46e5,
+    #7c3aed
+  );
+
+  color: white;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.auth-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 10px 25px rgba(79, 70, 229, 0.25);
+}
+
+.auth-switch {
+  margin-top: 25px;
+  text-align: center;
+
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.auth-switch button {
+  border: none;
+  background: none;
+
+  color: #4f46e5;
+  font-weight: 700;
+
+  padding: 0;
+}
+
+.auth-switch button:hover {
+  text-decoration: underline;
+}
+
+.auth-footer {
+  margin-top: 40px;
+
+  text-align: center;
+
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+.dashboard {
+  min-height: 100vh;
+  display: flex;
+  background: #f5f7fb;
+}
+
+
+/* SIDEBAR */
+
+.sidebar {
+  width: 255px;
+  min-height: 100vh;
+
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+
+  background: #111827;
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+
+  z-index: 100;
+}
+
+.sidebar-logo {
+  height: 82px;
+
+  padding: 0 25px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.sidebar-logo .brand-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+
+  font-size: 13px;
+}
+
+.sidebar-menu {
+  padding: 25px 15px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-menu button {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 13px 15px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #9ca3af;
+
+  text-align: left;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.sidebar-menu button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+}
+
+.sidebar-menu button.active {
+  background: rgba(99, 102, 241, 0.2);
+  color: white;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 20px;
+}
+
+
+/* MAIN DASHBOARD */
 
 .dashboard-main {
-  flex: 1;
-  padding: 30px;
+  margin-left: 255px;
+
+  width: calc(100% - 255px);
+
+  min-height: 100vh;
+
+  padding: 35px;
 }
-
-
-/* =========================
-   DASHBOARD HEADER
-========================= */
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  margin-bottom: 30px;
 }
 
 .dashboard-header h1 {
-  margin-bottom: 5px;
+  margin: 0;
+
+  font-size: 30px;
+  letter-spacing: -0.8px;
+  color: #111827;
 }
 
 .dashboard-header p {
+  margin: 6px 0 0;
+
   color: #6b7280;
-}
-
-.user-info {
-  background: white;
-  padding: 10px 18px;
-  border-radius: 8px;
-}
-
-
-/* =========================
-   STAT CARDS
-========================= */
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-top: 30px;
-}
-
-.stat-card {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-}
-
-.stat-card strong {
-  font-size: 32px;
-  display: block;
-  margin: 10px 0;
-}
-
-
-/* =========================
-   QUICK ACTIONS
-========================= */
-
-.quick-actions,
-.recent-meetings {
-  margin-top: 35px;
-}
-
-.action-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.action-card {
-  background: white;
-  border: none;
-  border-radius: 12px;
-  padding: 25px;
-  text-align: left;
-  cursor: pointer;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-}
-
-.action-card:hover {
-  transform: translateY(-2px);
-}
-
-
-/* =========================
-   CREATE / JOIN MEETING
-========================= */
-
-.create-meeting,
-.join-meeting {
-  max-width: 900px;
-  margin: auto;
-}
-
-.create-header {
-  margin-bottom: 25px;
-}
-
-.meeting-form {
-  background: white;
-  padding: 30px;
-  border-radius: 14px;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-}
-
-.meeting-form label {
-  display: block;
-  margin-top: 15px;
-  margin-bottom: 7px;
-  font-weight: bold;
-}
-
-.meeting-form input,
-.meeting-form select,
-.meeting-form textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 7px;
   font-size: 14px;
 }
 
-.meeting-form textarea {
-  min-height: 100px;
-  resize: vertical;
+
+/* =========================================================
+   STAT CARDS
+   ========================================================= */
+
+.stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 20px;
+
+  margin-bottom: 25px;
 }
 
-.create-meeting-button {
-  margin-top: 20px;
-  padding: 12px 22px;
-  border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  cursor: pointer;
-  font-weight: bold;
+.stat-card {
+  padding: 23px;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 15px;
+
+  box-shadow:
+    0 4px 15px rgba(15, 23, 42, 0.04);
 }
 
-.create-meeting-button:hover {
-  background: #1d4ed8;
+.stat-card h3 {
+  margin: 0;
+
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.meeting-message {
-  margin-top: 20px;
-  padding: 12px;
-  border-radius: 8px;
-  background: #eff6ff;
+.stat-card strong {
+  display: block;
+
+  margin-top: 10px;
+
+  font-size: 32px;
+  line-height: 1;
+
+  color: #111827;
 }
 
-.meeting-created {
-  margin-top: 20px;
-  padding: 20px;
-  border-radius: 10px;
-  background: #ecfdf5;
-  border: 1px solid #10b981;
+.stat-card p {
+  margin: 9px 0 0;
+
+  color: #9ca3af;
+  font-size: 12px;
 }
 
 
-/* =========================
-   MEETING ROOM
-========================= */
+/* =========================================================
+   DASHBOARD CONTENT
+   ========================================================= */
 
-.meeting-room {
-  min-height: 100vh;
-  background: #111827;
-  color: white;
+.dashboard-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.6fr)
+    minmax(300px, 0.8fr);
+
+  gap: 25px;
+}
+
+.dashboard-card {
+  background: white;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 16px;
+
   padding: 25px;
+
+  box-shadow:
+    0 4px 15px rgba(15, 23, 42, 0.04);
 }
 
-.meeting-room-header {
+.dashboard-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+
+  margin-bottom: 20px;
+}
+
+.dashboard-card-header h2 {
+  margin: 0;
+
+  font-size: 18px;
+  color: #111827;
+}
+
+
+/* =========================================================
+   MEETING LIST
+   ========================================================= */
+
+.meeting-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.meeting-item {
+  padding: 16px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 11px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.meeting-item:hover {
+  background: #f9fafb;
+  border-color: #c7d2fe;
+}
+
+.meeting-item h3 {
+  margin: 0;
+
+  font-size: 15px;
+  color: #111827;
+}
+
+.meeting-item p {
+  margin: 5px 0 0;
+
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.meeting-status {
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  background: #eef2ff;
+
+  color: #4f46e5;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.create-meeting-button {
+  border: none;
+
+  padding: 11px 17px;
+
+  border-radius: 9px;
+
+  background: linear-gradient(
+    135deg,
+    #4f46e5,
+    #7c3aed
+  );
+
+  color: white;
+
+  font-weight: 700;
+  font-size: 13px;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.create-meeting-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 8px 20px rgba(79, 70, 229, 0.22);
+}
+
+
+/* =========================================================
+   QUICK ACTIONS
+   ========================================================= */
+
+.quick-actions {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.quick-action {
+  min-height: 105px;
+
+  padding: 18px;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 12px;
+
+  background: white;
+
+  text-align: left;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.quick-action:hover {
+  transform: translateY(-2px);
+
+  border-color: #c7d2fe;
+
+  box-shadow:
+    0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.quick-action strong {
+  display: block;
+
+  margin-top: 8px;
+
+  color: #111827;
+}
+
+.quick-action span {
+  color: #6b7280;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   AI DASHBOARD CARD
+   ========================================================= */
+
+.ai-dashboard-card {
+  position: relative;
+
+  overflow: hidden;
+
+  padding: 30px;
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #111827 0%,
+      #1e1b4b 55%,
+      #312e81 100%
+    );
+
+  color: white;
+
+  box-shadow:
+    0 14px 35px rgba(15, 23, 42, 0.14);
+}
+
+.ai-dashboard-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 230px;
+  height: 230px;
+
+  right: -80px;
+  top: -100px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(129, 140, 248, 0.15);
+}
+
+.ai-dashboard-card h2 {
+  margin: 0;
+
+  position: relative;
+
+  font-size: 22px;
+}
+
+.ai-dashboard-card p {
+  position: relative;
+
+  color: #c7d2fe;
+
+  line-height: 1.6;
+}
+
+.ai-dashboard-card button {
+  position: relative;
+
+  margin-top: 10px;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  border-radius: 9px;
+
+  padding: 10px 15px;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  color: white;
+
+  font-weight: 700;
+}
+
+.ai-dashboard-card button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+
+/* =========================================================
+   CREATE / JOIN MEETING
+   ========================================================= */
+
+.create-meeting-container,
+.join-meeting-container {
+  max-width: 700px;
+
+  margin: 30px auto;
+
+  padding: 30px;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 8px 25px rgba(15, 23, 42, 0.05);
+}
+
+.create-meeting-container h1,
+.join-meeting-container h1 {
+  margin-top: 0;
+
+  color: #111827;
+}
+
+.create-meeting-container label,
+.join-meeting-container label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #374151;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.create-meeting-container input,
+.create-meeting-container textarea,
+.create-meeting-container select,
+.join-meeting-container input {
+  width: 100%;
+
+  padding: 12px 13px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  background: white;
+
+  color: #111827;
+}
+
+.create-meeting-container input:focus,
+.create-meeting-container textarea:focus,
+.create-meeting-container select:focus,
+.join-meeting-container input:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+
+/* =========================================================
+   MEETING ROOM
+   ========================================================= */
+
+.meeting-room {
+  min-height: 100vh;
+
+  padding: 25px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fafc,
+      #eef2ff
+    );
+
+  color: #111827;
+}
+
+
+/* HEADER */
+
+.meeting-room-header {
+  max-width: 1500px;
+
+  margin: 0 auto 25px;
+
+  padding: 20px 24px;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 15px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  box-shadow:
+    0 6px 20px rgba(15, 23, 42, 0.05);
 }
 
 .meeting-room-header h1 {
   margin: 0;
+
+  font-size: 24px;
+
+  color: #111827;
 }
 
 .meeting-room-header p {
-  margin-top: 6px;
-  color: #9ca3af;
+  margin: 6px 0 0;
+
+  color: #6b7280;
+
+  font-size: 13px;
 }
 
 .leave-button {
-  background: #dc2626;
-  color: white;
   border: none;
-  padding: 12px 22px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
+
+  padding: 11px 18px;
+
+  border-radius: 9px;
+
+  background: #dc2626;
+
+  color: white;
+
+  font-weight: 700;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .leave-button:hover {
   background: #b91c1c;
+
+  transform: translateY(-1px);
 }
 
 
-/* =========================
-   MEETING CONTENT
-========================= */
+/* MAIN MEETING CONTENT */
 
 .meeting-room-content {
+  max-width: 1500px;
+
+  margin: 0 auto;
+
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    360px;
+
+  gap: 25px;
+
+  align-items: start;
 }
 
+
+/* VIDEO SECTION */
+
 .video-section {
-  background: #1f2937;
-  padding: 20px;
-  border-radius: 14px;
+  min-width: 0;
+
+  padding: 25px;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 6px 20px rgba(15, 23, 42, 0.05);
+}
+
+.video-section > h2 {
+  margin-top: 0;
+
+  margin-bottom: 12px;
+
+  font-size: 17px;
+
+  color: #111827;
 }
 
 .video-placeholder {
+  width: 100%;
+
   min-height: 350px;
-  background: #030712;
+
   border-radius: 12px;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #1f2937,
+      #030712
+    );
+
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+
   align-items: center;
+
+  justify-content: center;
+
+  overflow: hidden;
+
+  color: white;
+
   text-align: center;
+
+  border: 1px solid #1f2937;
 }
 
-.video-placeholder p {
-  color: #9ca3af;
+.video-placeholder video {
+  display: block;
 }
 
 
-/* =========================
-   PARTICIPANTS
-========================= */
+/* PARTICIPANTS */
 
 .participants-section {
-  margin-top: 20px;
+  margin-top: 28px;
+
+  padding-top: 22px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.participants-section h2 {
+  margin: 0 0 15px;
+
+  font-size: 18px;
 }
 
 .participant-card {
   display: flex;
+
   justify-content: space-between;
-  background: #374151;
-  padding: 12px 15px;
-  border-radius: 8px;
+
+  align-items: center;
+
+  padding: 13px 15px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 10px;
+}
+
+.participant-card strong {
+  color: #111827;
 }
 
 .participant-card span {
-  color: #93c5fd;
+  padding: 4px 9px;
+
+  border-radius: 999px;
+
+  background: #eef2ff;
+
+  color: #4f46e5;
+
+  font-size: 11px;
+
+  font-weight: 700;
 }
 
 
-/* =========================
+/* =========================================================
    CHAT
-========================= */
+   ========================================================= */
 
 .chat-section {
-  background: white;
-  color: #111827;
-  border-radius: 14px;
-  padding: 20px;
+  min-height: 620px;
+
   display: flex;
+
   flex-direction: column;
-  min-height: 500px;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 16px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 6px 20px rgba(15, 23, 42, 0.05);
 }
 
 .chat-section h2 {
-  margin-top: 0;
+  margin: 0;
+
+  padding: 20px;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  font-size: 17px;
 }
 
 .chat-messages {
   flex: 1;
+
+  min-height: 420px;
+
+  max-height: 520px;
+
   overflow-y: auto;
-  padding: 10px 0;
+
+  padding: 18px;
+
+  background: #f8fafc;
 }
 
 .empty-chat {
-  color: #9ca3af;
+  margin-top: 40px;
+
   text-align: center;
-  margin-top: 50px;
+
+  color: #9ca3af;
+
+  font-size: 13px;
 }
 
 .chat-message {
-  background: #eff6ff;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 8px;
+  width: fit-content;
+
+  max-width: 90%;
+
+  margin-bottom: 10px;
+
+  padding: 10px 13px;
+
+  border-radius: 10px;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+
+  color: #374151;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+
+  box-shadow:
+    0 2px 5px rgba(15, 23, 42, 0.03);
 }
 
 .chat-input {
+  padding: 15px;
+
   display: flex;
+
   gap: 8px;
-  margin-top: 15px;
+
+  border-top: 1px solid #e5e7eb;
+
+  background: white;
 }
 
 .chat-input input {
   flex: 1;
-  padding: 11px;
+
+  min-width: 0;
+
+  padding: 11px 12px;
+
   border: 1px solid #d1d5db;
-  border-radius: 7px;
+
+  border-radius: 8px;
+
+  outline: none;
+}
+
+.chat-input input:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .chat-input button {
-  padding: 11px 18px;
   border: none;
-  border-radius: 7px;
-  background: #2563eb;
+
+  padding: 0 17px;
+
+  border-radius: 8px;
+
+  background: #4f46e5;
+
   color: white;
-  cursor: pointer;
+
+  font-weight: 700;
+}
+
+.chat-input button:hover {
+  background: #4338ca;
 }
 
 
-/* =========================
-   AI ASSISTANT
-========================= */
+/* =========================================================
+   AI MEETING ASSISTANT
+   ========================================================= */
 
 .ai-meeting-section {
-  margin-top: 25px;
-  background: #1f2937;
-  padding: 25px;
-  border-radius: 14px;
+  max-width: 1500px;
+
+  margin: 25px auto 0;
+
+  padding: 28px;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #111827 0%,
+      #1e1b4b 55%,
+      #312e81 100%
+    );
+
+  color: white;
+
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.12);
+}
+
+.ai-meeting-section h2 {
+  margin: 0;
+
+  font-size: 22px;
 }
 
 .ai-meeting-section > p {
-  color: #9ca3af;
+  margin: 8px 0 0;
+
+  color: #c7d2fe;
+
+  line-height: 1.6;
 }
 
-.ai-feature-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-top: 20px;
+.ai-meeting-section textarea {
+  font-family: inherit;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
+.ai-meeting-section textarea:focus {
+  border-color: #818cf8 !important;
+
+  box-shadow:
+    0 0 0 3px rgba(129, 140, 248, 0.15);
+}
+
+.ai-meeting-section .create-meeting-button {
+  margin-top: 15px;
+}
+
+
+/* AI RESULT */
 
 .ai-card {
-  background: #374151;
   padding: 20px;
-  border-radius: 10px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  color: #f8fafc;
+
+  line-height: 1.7;
 }
 
-.ai-card p {
-  color: #d1d5db;
+.ai-card h3 {
+  margin-top: 0;
+
+  color: white;
 }
 
 
-/* =========================
-   RESPONSIVE
-========================= */
+/* =========================================================
+   PROFILE
+   ========================================================= */
 
-@media (max-width: 900px) {
+.profile-card {
+  max-width: 700px;
 
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+  margin: 30px auto;
+
+  padding: 30px;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 6px 20px rgba(15, 23, 42, 0.05);
+}
+
+.profile-card h2 {
+  margin-top: 0;
+}
+
+.profile-row {
+  padding: 15px 0;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.profile-row:last-child {
+  border-bottom: none;
+}
+
+.profile-label {
+  color: #6b7280;
+
+  font-size: 13px;
+}
+
+.profile-value {
+  color: #111827;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   EMPTY STATES
+   ========================================================= */
+
+.empty-state {
+  padding: 45px 20px;
+
+  text-align: center;
+
+  color: #6b7280;
+}
+
+.empty-state h3 {
+  margin-bottom: 8px;
+
+  color: #374151;
+}
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.loading {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height: 250px;
+
+  color: #6b7280;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+  .auth-page {
+    grid-template-columns: 1fr;
   }
 
-  .action-grid {
+  .auth-brand {
+    display: none;
+  }
+
+  .mobile-brand {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-bottom: 35px;
+
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .mobile-brand .brand-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .auth-panel {
+    min-height: 100vh;
+  }
+
+  .stats-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-grid {
     grid-template-columns: 1fr;
   }
 
@@ -438,34 +1470,178 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .ai-feature-grid {
-    grid-template-columns: 1fr;
+  .chat-section {
+    min-height: 500px;
   }
-
 }
 
-@media (max-width: 700px) {
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .auth-panel {
+    padding: 25px 18px;
+  }
+
+  .auth-heading h2 {
+    font-size: 28px;
+  }
+
+  .dashboard {
+    display: block;
+  }
 
   .sidebar {
-    width: 180px;
+    width: 100%;
+
+    min-height: auto;
+
+    position: relative;
+  }
+
+  .sidebar-logo {
+    height: 65px;
+  }
+
+  .sidebar-menu {
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, 1fr);
+
+    padding: 12px;
+  }
+
+  .sidebar-bottom {
+    display: none;
   }
 
   .dashboard-main {
-    padding: 15px;
+    margin-left: 0;
+
+    width: 100%;
+
+    padding: 20px 15px;
+  }
+
+  .dashboard-header {
+    align-items: flex-start;
+
+    gap: 15px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 24px;
   }
 
   .stats-grid {
     grid-template-columns: 1fr;
+
+    gap: 12px;
+  }
+
+  .dashboard-card {
+    padding: 18px;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
   }
 
   .meeting-room {
-    padding: 15px;
+    padding: 12px;
   }
 
   .meeting-room-header {
     flex-direction: column;
+
     align-items: flex-start;
-    gap: 15px;
+
+    padding: 17px;
   }
 
+  .meeting-room-header h1 {
+    font-size: 20px;
+  }
+
+  .leave-button {
+    width: 100%;
+  }
+
+  .video-section {
+    padding: 15px;
+  }
+
+  .video-placeholder {
+    min-height: 240px;
+  }
+
+  .video-placeholder video {
+    height: 240px !important;
+  }
+
+  .chat-section {
+    min-height: 450px;
+  }
+
+  .chat-messages {
+    min-height: 300px;
+  }
+
+  .ai-meeting-section {
+    padding: 20px 15px;
+  }
+
+  .profile-row {
+    flex-direction: column;
+
+    gap: 5px;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .sidebar-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-button {
+    height: 50px;
+  }
+
+  .brand-message h1 {
+    font-size: 38px;
+  }
+
+  .meeting-room-header {
+    padding: 15px;
+  }
+
+  .video-section {
+    padding: 12px;
+  }
+
+  .video-placeholder {
+    min-height: 210px;
+  }
+
+  .video-placeholder video {
+    height: 210px !important;
+  }
+
+  .chat-input {
+    flex-direction: column;
+  }
+
+  .chat-input button {
+    height: 42px;
+  }
 }

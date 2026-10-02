@@ -10,6 +10,8 @@ function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [loading, setLoading] = useState(false);
+
   const handleLogin = async () => {
     if (!email || !password) {
       alert("Please enter email and password.");
@@ -17,6 +19,8 @@ function App() {
     }
 
     try {
+      setLoading(true);
+
       const response = await axios.post(
         "https://intellmeet-backend-u3jz.onrender.com/api/auth/login",
         {
@@ -36,6 +40,8 @@ function App() {
           error.response?.data?.error ||
           "Login failed"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,6 +52,8 @@ function App() {
     }
 
     try {
+      setLoading(true);
+
       await axios.post(
         "https://intellmeet-backend-u3jz.onrender.com/api/auth/register",
         {
@@ -70,6 +78,8 @@ function App() {
           error.response?.data?.error ||
           "Registration failed"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,30 +88,117 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <div className="auth-container">
+    <div className="auth-page">
 
-        <div className="brand-section">
-          <h1>IntellMeet</h1>
-          <p>
-            AI-Powered Enterprise Meeting & Collaboration Platform
-          </p>
+      {/* LEFT BRAND SECTION */}
+      <div className="auth-brand">
+
+        <div className="auth-brand-content">
+
+          <div className="brand-logo">
+            <div className="brand-icon">IM</div>
+            <span>IntellMeet</span>
+          </div>
+
+          <div className="brand-message">
+            <h1>
+              Smarter meetings.
+              <br />
+              Better collaboration.
+            </h1>
+
+            <p>
+              A modern meeting and collaboration platform designed
+              to help teams communicate, connect and work together.
+            </p>
+          </div>
+
+          <div className="brand-features">
+
+            <div className="brand-feature">
+              <span>✓</span>
+              <div>
+                <strong>Secure team meetings</strong>
+                <p>Connect with your team in a secure environment.</p>
+              </div>
+            </div>
+
+            <div className="brand-feature">
+              <span>✓</span>
+              <div>
+                <strong>Real-time collaboration</strong>
+                <p>Chat and collaborate during meetings.</p>
+              </div>
+            </div>
+
+            <div className="brand-feature">
+              <span>✓</span>
+              <div>
+                <strong>AI-powered assistance</strong>
+                <p>Turn meeting discussions into useful insights.</p>
+              </div>
+            </div>
+
+          </div>
+
         </div>
 
-        <div className="auth-box">
+      </div>
 
-          {isLogin ? (
-            <>
-              <h2>Welcome Back</h2>
+      {/* RIGHT LOGIN SECTION */}
+      <div className="auth-panel">
 
-              <label>Email</label>
+        <div className="auth-container">
+
+          {/* MOBILE LOGO */}
+          <div className="mobile-brand">
+            <div className="brand-icon">IM</div>
+            <span>IntellMeet</span>
+          </div>
+
+          <div className="auth-box">
+
+            <div className="auth-heading">
+
+              <h2>
+                {isLogin ? "Welcome back" : "Create your account"}
+              </h2>
+
+              <p>
+                {isLogin
+                  ? "Sign in to continue to your workspace."
+                  : "Create an account to start collaborating."}
+              </p>
+
+            </div>
+
+            {!isLogin && (
+              <div className="form-group">
+                <label>Name</label>
+
+                <input
+                  type="text"
+                  placeholder="Enter your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+            )}
+
+            <div className="form-group">
+
+              <label>Email address</label>
 
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+
+            </div>
+
+            <div className="form-group">
 
               <label>Password</label>
 
@@ -110,77 +207,63 @@ function App() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && isLogin) {
+                    handleLogin();
+                  }
+                }}
               />
 
-              <button onClick={handleLogin}>
-                Login
-              </button>
+            </div>
 
-              <p>
-                Don't have an account?{" "}
-                <span
-                  onClick={() => setIsLogin(false)}
-                  style={{
-                    cursor: "pointer",
-                    color: "blue",
-                  }}
-                >
-                  Register
-                </span>
-              </p>
-            </>
-          ) : (
-            <>
-              <h2>Create Account</h2>
+            <button
+              className="auth-button"
+              onClick={isLogin ? handleLogin : handleRegister}
+              disabled={loading}
+            >
+              {loading
+                ? "Please wait..."
+                : isLogin
+                ? "Sign in"
+                : "Create account"}
+            </button>
 
-              <label>Name</label>
+            <div className="auth-switch">
 
-              <input
-                type="text"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              {isLogin ? (
+                <>
+                  Don't have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsLogin(false)}
+                  >
+                    Create account
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsLogin(true)}
+                  >
+                    Sign in
+                  </button>
+                </>
+              )}
 
-              <label>Email</label>
+            </div>
 
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+          </div>
 
-              <label>Password</label>
-
-              <input
-                type="password"
-                placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-
-              <button onClick={handleRegister}>
-                Register
-              </button>
-
-              <p>
-                Already have an account?{" "}
-                <span
-                  onClick={() => setIsLogin(true)}
-                  style={{
-                    cursor: "pointer",
-                    color: "blue",
-                  }}
-                >
-                  Login
-                </span>
-              </p>
-            </>
-          )}
+          <div className="auth-footer">
+            © 2026 IntellMeet · AI-powered collaboration
+          </div>
 
         </div>
+
       </div>
+
     </div>
   );
 }

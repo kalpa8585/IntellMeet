@@ -28,11 +28,6 @@ function Dashboard() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
 
-
-  // =========================
-  // LOAD MEETINGS
-  // =========================
-
   const loadMeetings = async () => {
     try {
       setLoadingMeetings(true);
@@ -42,18 +37,12 @@ function Dashboard() {
       );
 
       setMeetings(response.data.meetings || []);
-
     } catch (error) {
       console.error("Error loading meetings:", error);
     } finally {
       setLoadingMeetings(false);
     }
   };
-
-
-  // =========================
-  // LOAD PROFILE
-  // =========================
 
   const loadProfile = async () => {
     try {
@@ -71,14 +60,12 @@ function Dashboard() {
       );
 
       setProfile(response.data.user);
-
     } catch (error) {
       console.error("Error loading profile:", error);
     } finally {
       setLoadingProfile(false);
     }
   };
-
 
   useEffect(() => {
     if (
@@ -92,222 +79,372 @@ function Dashboard() {
     if (activeMenu === "Profile") {
       loadProfile();
     }
-
   }, [activeMenu]);
-
-
-  // =========================
-  // LOGOUT
-  // =========================
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     window.location.reload();
   };
 
+  const userName = profile?.name || "Kalpana";
+
+  const upcomingMeetings = meetings.length;
 
   return (
     <div className="dashboard">
 
-      {/* SIDEBAR */}
+      {/* =========================================
+          SIDEBAR
+      ========================================= */}
 
       <aside className="sidebar">
 
-        <div className="sidebar-logo">
+        <div className="sidebar-brand">
 
-          <h2>
-            IntellMeet
-          </h2>
+          <div className="sidebar-brand-icon">
+            IM
+          </div>
 
-          <p>
-            AI Collaboration
-          </p>
+          <div>
+            <h2>IntellMeet</h2>
+            <span>AI Collaboration</span>
+          </div>
 
         </div>
 
 
-        <nav>
+        {/* WORKSPACE */}
+
+        <div className="sidebar-section">
+
+          <p className="sidebar-label">
+            WORKSPACE
+          </p>
+
+          <nav className="sidebar-nav">
+
+            <button
+              onClick={() => setActiveMenu("Dashboard")}
+              className={
+                activeMenu === "Dashboard"
+                  ? "active"
+                  : ""
+              }
+            >
+              <span className="nav-icon">
+                ⌂
+              </span>
+
+              Dashboard
+            </button>
+
+
+            <button
+              onClick={() => setActiveMenu("Meetings")}
+              className={
+                activeMenu === "Meetings"
+                  ? "active"
+                  : ""
+              }
+            >
+              <span className="nav-icon">
+                ▣
+              </span>
+
+              Meetings
+            </button>
+
+          </nav>
+
+        </div>
+
+
+        {/* COLLABORATION */}
+
+        <div className="sidebar-section">
+
+          <p className="sidebar-label">
+            COLLABORATION
+          </p>
+
+          <nav className="sidebar-nav">
+
+            <button
+              onClick={() => setActiveMenu("Create Meeting")}
+              className={
+                activeMenu === "Create Meeting"
+                  ? "active"
+                  : ""
+              }
+            >
+              <span className="nav-icon">
+                ＋
+              </span>
+
+              Create Meeting
+            </button>
+
+
+            <button
+              onClick={() => setActiveMenu("Join Meeting")}
+              className={
+                activeMenu === "Join Meeting"
+                  ? "active"
+                  : ""
+              }
+            >
+              <span className="nav-icon">
+                →
+              </span>
+
+              Join Meeting
+            </button>
+
+
+            <button
+              onClick={() => setActiveMenu("History")}
+              className={
+                activeMenu === "History"
+                  ? "active"
+                  : ""
+              }
+            >
+              <span className="nav-icon">
+                ◷
+              </span>
+
+              Meeting History
+            </button>
+
+          </nav>
+
+        </div>
+
+
+        {/* ACCOUNT */}
+
+        <div className="sidebar-section">
+
+          <p className="sidebar-label">
+            ACCOUNT
+          </p>
+
+          <nav className="sidebar-nav">
+
+            <button
+              onClick={() => setActiveMenu("Profile")}
+              className={
+                activeMenu === "Profile"
+                  ? "active"
+                  : ""
+              }
+            >
+              <span className="nav-icon">
+                ◯
+              </span>
+
+              Profile
+            </button>
+
+          </nav>
+
+        </div>
+
+
+        {/* SIDEBAR BOTTOM */}
+
+        <div className="sidebar-bottom">
+
+          <div className="sidebar-user">
+
+            <div className="sidebar-avatar">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+
+            <div className="sidebar-user-info">
+
+              <strong>
+                {userName}
+              </strong>
+
+              <span>
+                Workspace member
+              </span>
+
+            </div>
+
+          </div>
+
 
           <button
-            onClick={() => setActiveMenu("Dashboard")}
-            className={
-              activeMenu === "Dashboard"
-                ? "active"
-                : ""
-            }
+            className="logout-button"
+            onClick={handleLogout}
           >
-            Dashboard
+            <span>
+              ↪
+            </span>
+
+            Logout
           </button>
 
-
-          <button
-            onClick={() => setActiveMenu("Meetings")}
-            className={
-              activeMenu === "Meetings"
-                ? "active"
-                : ""
-            }
-          >
-            Meetings
-          </button>
-
-
-          <button
-            onClick={() => setActiveMenu("Create Meeting")}
-            className={
-              activeMenu === "Create Meeting"
-                ? "active"
-                : ""
-            }
-          >
-            Create Meeting
-          </button>
-
-
-          <button
-            onClick={() => setActiveMenu("Join Meeting")}
-            className={
-              activeMenu === "Join Meeting"
-                ? "active"
-                : ""
-            }
-          >
-            Join Meeting
-          </button>
-
-
-          <button
-            onClick={() => setActiveMenu("History")}
-            className={
-              activeMenu === "History"
-                ? "active"
-                : ""
-            }
-          >
-            Meeting History
-          </button>
-
-
-          <button
-            onClick={() => setActiveMenu("Profile")}
-            className={
-              activeMenu === "Profile"
-                ? "active"
-                : ""
-            }
-          >
-            Profile
-          </button>
-
-        </nav>
-
-
-        <button
-          className="logout-button"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
+        </div>
 
       </aside>
 
 
-      {/* MAIN CONTENT */}
+      {/* =========================================
+          MAIN CONTENT
+      ========================================= */}
 
       <main className="dashboard-main">
 
 
-        {/* CREATE MEETING */}
-
-        {activeMenu === "Create Meeting" && (
-          <CreateMeeting />
-        )}
-
-
-        {/* JOIN MEETING */}
-
-        {activeMenu === "Join Meeting" && (
-          <JoinMeeting />
-        )}
-
-
-        {/* DASHBOARD */}
+        {/* =========================================
+            DASHBOARD HOME
+        ========================================= */}
 
         {activeMenu === "Dashboard" && (
 
           <>
 
-            <header className="dashboard-header">
+            {/* TOP HEADER */}
+
+            <header className="dashboard-topbar">
 
               <div>
 
+                <p className="page-eyebrow">
+                  WORKSPACE
+                </p>
+
                 <h1>
-                  Welcome to IntellMeet
+                  Welcome back,{" "}
+                  {userName.split(" ")[0]}
                 </h1>
 
-                <p>
-                  Manage your meetings and collaboration from one place.
+                <p className="page-description">
+                  Manage your meetings and collaborate
+                  with your team.
                 </p>
 
               </div>
 
 
-              <div className="user-info">
+              <div className="topbar-user">
 
-                <span>
-                  {profile?.name || "Kalpana Test"}
-                </span>
+                <div className="topbar-avatar">
+                  {userName.charAt(0).toUpperCase()}
+                </div>
+
+                <div>
+
+                  <strong>
+                    {userName}
+                  </strong>
+
+                  <span>
+                    IntellMeet member
+                  </span>
+
+                </div>
 
               </div>
 
             </header>
 
 
+            {/* =========================================
+                STATISTICS
+            ========================================= */}
+
             <section className="stats-grid">
 
+
+              {/* TOTAL MEETINGS */}
+
               <div className="stat-card">
+
+                <div className="stat-card-top">
+
+                  <div className="stat-icon purple">
+                    ◫
+                  </div>
+
+                  <span className="stat-status">
+                    All time
+                  </span>
+
+                </div>
+
+                <strong>
+                  {meetings.length}
+                </strong>
 
                 <h3>
                   Total Meetings
                 </h3>
 
-                <strong>
-                  {meetings.length}
-                </strong>
-
                 <p>
-                  Meetings created
+                  Meetings created in your workspace
                 </p>
 
               </div>
 
 
+              {/* UPCOMING */}
+
               <div className="stat-card">
+
+                <div className="stat-card-top">
+
+                  <div className="stat-icon blue">
+                    ◷
+                  </div>
+
+                  <span className="stat-status">
+                    Scheduled
+                  </span>
+
+                </div>
+
+                <strong>
+                  {upcomingMeetings}
+                </strong>
 
                 <h3>
                   Upcoming Meetings
                 </h3>
 
-                <strong>
-                  {meetings.length}
-                </strong>
-
                 <p>
-                  Scheduled meetings
+                  Meetings available for collaboration
                 </p>
 
               </div>
 
 
+              {/* COMPLETED */}
+
               <div className="stat-card">
 
-                <h3>
-                  Completed
-                </h3>
+                <div className="stat-card-top">
+
+                  <div className="stat-icon green">
+                    ✓
+                  </div>
+
+                  <span className="stat-status">
+                    Activity
+                  </span>
+
+                </div>
 
                 <strong>
                   0
                 </strong>
+
+                <h3>
+                  Completed
+                </h3>
 
                 <p>
                   Completed meetings
@@ -316,18 +453,32 @@ function Dashboard() {
               </div>
 
 
+              {/* TEAM MEMBERS */}
+
               <div className="stat-card">
 
-                <h3>
-                  Team Members
-                </h3>
+                <div className="stat-card-top">
+
+                  <div className="stat-icon orange">
+                    ◉
+                  </div>
+
+                  <span className="stat-status">
+                    Active
+                  </span>
+
+                </div>
 
                 <strong>
                   1
                 </strong>
 
+                <h3>
+                  Team Members
+                </h3>
+
                 <p>
-                  Active members
+                  Members in your workspace
                 </p>
 
               </div>
@@ -335,32 +486,65 @@ function Dashboard() {
             </section>
 
 
-            <section className="quick-actions">
+            {/* =========================================
+                QUICK ACTIONS
+            ========================================= */}
 
-              <h2>
-                Quick Actions
-              </h2>
+            <section className="dashboard-section">
+
+              <div className="section-heading">
+
+                <div>
+
+                  <h2>
+                    Quick actions
+                  </h2>
+
+                  <p>
+                    Start your next collaboration in seconds.
+                  </p>
+
+                </div>
+
+              </div>
 
 
               <div className="action-grid">
 
+
+                {/* CREATE MEETING */}
+
                 <button
-                  className="action-card"
+                  className="action-card action-primary"
                   onClick={() =>
                     setActiveMenu("Create Meeting")
                   }
                 >
 
-                  <h3>
-                    Create New Meeting
-                  </h3>
+                  <div className="action-icon">
+                    +
+                  </div>
 
-                  <p>
-                    Schedule a new meeting with your team.
-                  </p>
+                  <div>
+
+                    <h3>
+                      Create a meeting
+                    </h3>
+
+                    <p>
+                      Schedule a new meeting with your team.
+                    </p>
+
+                  </div>
+
+                  <span className="action-arrow">
+                    →
+                  </span>
 
                 </button>
 
+
+                {/* JOIN MEETING */}
 
                 <button
                   className="action-card"
@@ -369,16 +553,30 @@ function Dashboard() {
                   }
                 >
 
-                  <h3>
-                    Join Meeting
-                  </h3>
+                  <div className="action-icon">
+                    ↗
+                  </div>
 
-                  <p>
-                    Join an existing meeting using a meeting ID.
-                  </p>
+                  <div>
+
+                    <h3>
+                      Join a meeting
+                    </h3>
+
+                    <p>
+                      Enter a meeting ID and join instantly.
+                    </p>
+
+                  </div>
+
+                  <span className="action-arrow">
+                    →
+                  </span>
 
                 </button>
 
+
+                {/* HISTORY */}
 
                 <button
                   className="action-card"
@@ -387,13 +585,25 @@ function Dashboard() {
                   }
                 >
 
-                  <h3>
-                    Meeting History
-                  </h3>
+                  <div className="action-icon">
+                    ◷
+                  </div>
 
-                  <p>
-                    View your previous meetings.
-                  </p>
+                  <div>
+
+                    <h3>
+                      Meeting history
+                    </h3>
+
+                    <p>
+                      Review your previous meetings.
+                    </p>
+
+                  </div>
+
+                  <span className="action-arrow">
+                    →
+                  </span>
 
                 </button>
 
@@ -402,56 +612,188 @@ function Dashboard() {
             </section>
 
 
-            <section className="recent-meetings">
+            {/* =========================================
+                RECENT MEETINGS + AI ASSISTANT
+            ========================================= */}
 
-              <h2>
-                Recent Meetings
-              </h2>
+            <section className="dashboard-lower-grid">
 
 
-              {meetings.length === 0 ? (
+              {/* RECENT MEETINGS */}
 
-                <div className="empty-state">
+              <div className="dashboard-card">
 
-                  <h3>
-                    No meetings yet
-                  </h3>
+                <div className="card-header">
 
-                  <p>
-                    Create your first meeting to get started with IntellMeet.
-                  </p>
+                  <div>
 
-                </div>
-
-              ) : (
-
-                meetings.slice(0, 5).map((meeting) => (
-
-                  <div
-                    key={meeting._id}
-                    className="meeting-created"
-                  >
-
-                    <h3>
-                      {meeting.title}
-                    </h3>
+                    <h2>
+                      Recent meetings
+                    </h2>
 
                     <p>
-                      {meeting.date} at {meeting.time}
-                    </p>
-
-                    <p>
-                      Meeting ID:{" "}
-                      <strong>
-                        {meeting.meetingId}
-                      </strong>
+                      Your latest meeting activity.
                     </p>
 
                   </div>
 
-                ))
+                  <button
+                    className="text-button"
+                    onClick={() =>
+                      setActiveMenu("Meetings")
+                    }
+                  >
+                    View all →
+                  </button>
 
-              )}
+                </div>
+
+
+                {loadingMeetings ? (
+
+                  <div className="dashboard-empty">
+
+                    <p>
+                      Loading meetings...
+                    </p>
+
+                  </div>
+
+                ) : meetings.length === 0 ? (
+
+                  <div className="dashboard-empty">
+
+                    <div className="empty-icon">
+                      ◷
+                    </div>
+
+                    <h3>
+                      No meetings yet
+                    </h3>
+
+                    <p>
+                      Create your first meeting to get started.
+                    </p>
+
+                    <button
+                      className="small-primary-button"
+                      onClick={() =>
+                        setActiveMenu("Create Meeting")
+                      }
+                    >
+                      Create meeting
+                    </button>
+
+                  </div>
+
+                ) : (
+
+                  <div className="recent-meeting-list">
+
+                    {meetings
+                      .slice(0, 5)
+                      .map((meeting) => (
+
+                        <div
+                          key={meeting._id}
+                          className="recent-meeting-item"
+                        >
+
+                          <div className="meeting-date-icon">
+                            ◷
+                          </div>
+
+                          <div className="recent-meeting-info">
+
+                            <h3>
+                              {meeting.title}
+                            </h3>
+
+                            <p>
+                              {meeting.date} ·{" "}
+                              {meeting.time}
+                            </p>
+
+                          </div>
+
+                          <div className="meeting-id-badge">
+                            {meeting.meetingId}
+                          </div>
+
+                        </div>
+
+                      ))}
+
+                  </div>
+
+                )}
+
+              </div>
+
+
+              {/* =========================================
+                  AI ASSISTANT
+              ========================================= */}
+
+              <div className="dashboard-card ai-dashboard-card">
+
+                <div className="ai-card-top">
+
+                  <div className="ai-card-icon">
+                    AI
+                  </div>
+
+                  <span className="ai-badge">
+                    AI ASSISTANT
+                  </span>
+
+                </div>
+
+
+                <h2>
+                  Smarter meeting insights
+                </h2>
+
+
+                <p>
+                  Turn your meeting notes into clear summaries,
+                  key discussion points, and actionable tasks
+                  with IntellMeet AI.
+                </p>
+
+
+                <div className="ai-features">
+
+                  <span>
+                    ✓ Meeting summaries
+                  </span>
+
+                  <span>
+                    ✓ Action items
+                  </span>
+
+                  <span>
+                    ✓ Key discussion points
+                  </span>
+
+                </div>
+
+
+                <button
+                  className="ai-insights-button"
+                  onClick={() =>
+                    setActiveMenu("Meetings")
+                  }
+                >
+                  Explore meeting insights
+
+                  <span>
+                    →
+                  </span>
+
+                </button>
+
+              </div>
 
             </section>
 
@@ -460,90 +802,157 @@ function Dashboard() {
         )}
 
 
-        {/* MEETINGS */}
+        {/* =========================================
+            CREATE MEETING
+        ========================================= */}
+
+        {activeMenu === "Create Meeting" && (
+          <CreateMeeting />
+        )}
+
+
+        {/* =========================================
+            JOIN MEETING
+        ========================================= */}
+
+        {activeMenu === "Join Meeting" && (
+          <JoinMeeting />
+        )}
+
+
+        {/* =========================================
+            MEETINGS
+        ========================================= */}
 
         {activeMenu === "Meetings" && (
 
-          <div className="create-meeting">
+          <div className="page-content">
 
-            <div className="create-header">
+            <div className="page-header">
 
-              <h1>
-                Meetings
-              </h1>
+              <div>
 
-              <p>
-                View all meetings created in IntellMeet.
-              </p>
+                <p className="page-eyebrow">
+                  WORKSPACE
+                </p>
+
+                <h1>
+                  Meetings
+                </h1>
+
+                <p>
+                  View and manage meetings created in IntellMeet.
+                </p>
+
+              </div>
+
+
+              <button
+                className="primary-button"
+                onClick={() =>
+                  setActiveMenu("Create Meeting")
+                }
+              >
+                + Create meeting
+              </button>
 
             </div>
 
 
             {loadingMeetings ? (
 
-              <div className="meeting-form">
+              <div className="dashboard-card">
 
-                <h3>
-                  Loading meetings...
-                </h3>
+                <div className="dashboard-empty">
+
+                  <p>
+                    Loading meetings...
+                  </p>
+
+                </div>
 
               </div>
 
             ) : meetings.length === 0 ? (
 
-              <div className="meeting-form">
+              <div className="dashboard-card">
 
-                <h3>
-                  No meetings found
-                </h3>
+                <div className="dashboard-empty">
 
-                <p>
-                  Create a meeting to see it here.
-                </p>
+                  <div className="empty-icon">
+                    ◷
+                  </div>
+
+                  <h3>
+                    No meetings found
+                  </h3>
+
+                  <p>
+                    Create a meeting to see it here.
+                  </p>
+
+                </div>
 
               </div>
 
             ) : (
 
-              meetings.map((meeting) => (
+              <div className="meetings-list">
 
-                <div
-                  key={meeting._id}
-                  className="meeting-created"
-                >
+                {meetings.map((meeting) => (
 
-                  <h2>
-                    {meeting.title}
-                  </h2>
+                  <div
+                    key={meeting._id}
+                    className="meeting-list-card"
+                  >
 
-                  <p>
-                    <strong>Date:</strong>{" "}
-                    {meeting.date}
-                  </p>
+                    <div className="meeting-list-main">
 
-                  <p>
-                    <strong>Time:</strong>{" "}
-                    {meeting.time}
-                  </p>
+                      <div className="meeting-list-icon">
+                        M
+                      </div>
 
-                  <p>
-                    <strong>Duration:</strong>{" "}
-                    {meeting.duration} minutes
-                  </p>
+                      <div>
 
-                  <p>
-                    <strong>Meeting ID:</strong>{" "}
-                    {meeting.meetingId}
-                  </p>
+                        <h2>
+                          {meeting.title}
+                        </h2>
 
-                  <p>
-                    <strong>Description:</strong>{" "}
-                    {meeting.description || "No description"}
-                  </p>
+                        <p>
+                          {meeting.description ||
+                            "No description"}
+                        </p>
 
-                </div>
+                      </div>
 
-              ))
+                    </div>
+
+
+                    <div className="meeting-meta">
+
+                      <span>
+                        📅 {meeting.date}
+                      </span>
+
+                      <span>
+                        ◷ {meeting.time}
+                      </span>
+
+                      <span>
+                        {meeting.duration} min
+                      </span>
+
+                      <span className="meeting-id-badge">
+                        {meeting.meetingId}
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                ))}
+
+              </div>
 
             )}
 
@@ -552,90 +961,129 @@ function Dashboard() {
         )}
 
 
-        {/* HISTORY */}
+        {/* =========================================
+            MEETING HISTORY
+        ========================================= */}
 
         {activeMenu === "History" && (
 
-          <div className="create-meeting">
+          <div className="page-content">
 
-            <div className="create-header">
+            <div className="page-header">
 
-              <h1>
-                Meeting History
-              </h1>
+              <div>
 
-              <p>
-                View all your created meetings.
-              </p>
+                <p className="page-eyebrow">
+                  ACTIVITY
+                </p>
+
+                <h1>
+                  Meeting History
+                </h1>
+
+                <p>
+                  Review your meeting activity.
+                </p>
+
+              </div>
 
             </div>
 
 
             {loadingMeetings ? (
 
-              <div className="meeting-form">
+              <div className="dashboard-card">
 
-                <h3>
-                  Loading meeting history...
-                </h3>
+                <div className="dashboard-empty">
+
+                  <p>
+                    Loading meeting history...
+                  </p>
+
+                </div>
 
               </div>
 
             ) : meetings.length === 0 ? (
 
-              <div className="meeting-form">
+              <div className="dashboard-card">
 
-                <h3>
-                  No meeting history found
-                </h3>
+                <div className="dashboard-empty">
 
-                <p>
-                  Your created meetings will appear here.
-                </p>
+                  <div className="empty-icon">
+                    ◷
+                  </div>
+
+                  <h3>
+                    No meeting history
+                  </h3>
+
+                  <p>
+                    Your meetings will appear here.
+                  </p>
+
+                </div>
 
               </div>
 
             ) : (
 
-              meetings.map((meeting) => (
+              <div className="meetings-list">
 
-                <div
-                  key={meeting._id}
-                  className="meeting-created"
-                >
+                {meetings.map((meeting) => (
 
-                  <h2>
-                    {meeting.title}
-                  </h2>
+                  <div
+                    key={meeting._id}
+                    className="meeting-list-card"
+                  >
 
-                  <p>
-                    <strong>Date:</strong>{" "}
-                    {meeting.date}
-                  </p>
+                    <div className="meeting-list-main">
 
-                  <p>
-                    <strong>Time:</strong>{" "}
-                    {meeting.time}
-                  </p>
+                      <div className="meeting-list-icon">
+                        ✓
+                      </div>
 
-                  <p>
-                    <strong>Duration:</strong>{" "}
-                    {meeting.duration} minutes
-                  </p>
+                      <div>
 
-                  <p>
-                    <strong>Meeting ID:</strong>{" "}
-                    {meeting.meetingId}
-                  </p>
+                        <h2>
+                          {meeting.title}
+                        </h2>
 
-                  <p>
-                    <strong>Description:</strong>{" "}
-                    {meeting.description || "No description"}
-                  </p>
+                        <p>
+                          {meeting.description ||
+                            "No description"}
+                        </p>
 
-                </div>
+                      </div>
 
-              ))
+                    </div>
+
+
+                    <div className="meeting-meta">
+
+                      <span>
+                        📅 {meeting.date}
+                      </span>
+
+                      <span>
+                        ◷ {meeting.time}
+                      </span>
+
+                      <span>
+                        {meeting.duration} min
+                      </span>
+
+                      <span className="meeting-id-badge">
+                        {meeting.meetingId}
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                ))}
+
+              </div>
 
             )}
 
@@ -644,97 +1092,157 @@ function Dashboard() {
         )}
 
 
-        {/* PROFILE */}
+        {/* =========================================
+            PROFILE
+        ========================================= */}
 
         {activeMenu === "Profile" && (
 
-          <div className="create-meeting">
+          <div className="page-content">
 
-            <div className="create-header">
+            <div className="page-header">
 
-              <h1>
-                My Profile
-              </h1>
+              <div>
 
-              <p>
-                View your IntellMeet account information.
-              </p>
+                <p className="page-eyebrow">
+                  ACCOUNT
+                </p>
+
+                <h1>
+                  My Profile
+                </h1>
+
+                <p>
+                  Manage your IntellMeet account information.
+                </p>
+
+              </div>
 
             </div>
 
 
             {loadingProfile ? (
 
-              <div className="meeting-form">
+              <div className="dashboard-card">
 
-                <h3>
-                  Loading profile...
-                </h3>
+                <div className="dashboard-empty">
+
+                  <p>
+                    Loading profile...
+                  </p>
+
+                </div>
 
               </div>
 
             ) : profile ? (
 
-              <div className="meeting-form">
-
-                <h2>
-                  Account Information
-                </h2>
+              <div className="profile-layout">
 
 
-                <label>
-                  Name
-                </label>
+                {/* PROFILE SUMMARY */}
 
-                <input
-                  type="text"
-                  value={profile.name}
-                  readOnly
-                />
+                <div className="dashboard-card profile-summary">
 
+                  <div className="profile-avatar">
+                    {profile.name.charAt(0).toUpperCase()}
+                  </div>
 
-                <label>
-                  Email
-                </label>
+                  <h2>
+                    {profile.name}
+                  </h2>
 
-                <input
-                  type="email"
-                  value={profile.email}
-                  readOnly
-                />
+                  <p>
+                    {profile.email}
+                  </p>
 
+                  <span className="profile-role">
+                    {profile.role}
+                  </span>
 
-                <label>
-                  Role
-                </label>
-
-                <input
-                  type="text"
-                  value={profile.role}
-                  readOnly
-                />
+                </div>
 
 
-                <button
-                  className="create-meeting-button"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
+                {/* ACCOUNT INFORMATION */}
+
+                <div className="dashboard-card profile-details">
+
+                  <h2>
+                    Account information
+                  </h2>
+
+
+                  <div className="profile-field">
+
+                    <label>
+                      Full name
+                    </label>
+
+                    <input
+                      type="text"
+                      value={profile.name}
+                      readOnly
+                    />
+
+                  </div>
+
+
+                  <div className="profile-field">
+
+                    <label>
+                      Email address
+                    </label>
+
+                    <input
+                      type="email"
+                      value={profile.email}
+                      readOnly
+                    />
+
+                  </div>
+
+
+                  <div className="profile-field">
+
+                    <label>
+                      Role
+                    </label>
+
+                    <input
+                      type="text"
+                      value={profile.role}
+                      readOnly
+                    />
+
+                  </div>
+
+
+                  <button
+                    className="logout-profile-button"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+
+                </div>
 
               </div>
 
             ) : (
 
-              <div className="meeting-form">
+              <div className="dashboard-card">
 
-                <h3>
-                  Unable to load profile
-                </h3>
+                <div className="dashboard-empty">
 
-                <p>
-                  Please login again.
-                </p>
+                  <h3>
+                    Unable to load profile
+                  </h3>
+
+                  <p>
+                    Please login again.
+                  </p>
+
+                </div>
 
               </div>
 
