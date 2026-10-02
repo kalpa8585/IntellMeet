@@ -34,12 +34,27 @@ ACTION ITEMS:
 Keep the response professional and easy to understand.
 `;
 
+    // AI URL can be configured through Render environment variables.
+    // For local development, it can remain:
+    // http://127.0.0.1:11434/api/generate
+
+    const aiUrl =
+      process.env.AI_URL ||
+      "http://127.0.0.1:11434/api/generate";
+
+    const aiModel =
+      process.env.AI_MODEL ||
+      "qwen2.5:3b";
+
     const response = await axios.post(
-      "http://127.0.0.1:11434/api/generate",
+      aiUrl,
       {
-        model: "qwen2.5:3b",
+        model: aiModel,
         prompt: prompt,
         stream: false
+      },
+      {
+        timeout: 60000
       }
     );
 
@@ -49,11 +64,16 @@ Keep the response professional and easy to understand.
     });
 
   } catch (error) {
-    console.error("LOCAL AI ERROR:", error.message);
 
-    res.status(500).json({
-      message: "AI summary generation failed",
-      error: error.message
+    console.error(
+      "AI SERVICE ERROR:",
+      error.response?.data || error.message
+    );
+
+    res.status(503).json({
+      message:
+        "AI service is currently unavailable. Your meeting system is still working normally.",
+      aiAvailable: false
     });
   }
 });
