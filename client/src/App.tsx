@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import axios from "axios";
 import Dashboard from "./Dashboard";
@@ -24,12 +25,54 @@ function App() {
       const response = await axios.post(
         "https://intellmeet-backend-u3jz.onrender.com/api/auth/login",
         {
-          email,
-          password,
+          email: email,
+          password: password,
         }
       );
 
-      localStorage.setItem("token", response.data.token);
+      const token = response.data.token;
+
+      if (!token) {
+        alert("Login failed: authentication token was not received.");
+        return;
+      }
+
+      localStorage.setItem("token", token);
+
+      let loggedInUser = response.data.user;
+
+      if (!loggedInUser) {
+        try {
+          const profileResponse = await axios.get(
+            "https://intellmeet-backend-u3jz.onrender.com/api/auth/profile",
+            {
+              headers: {
+                Authorization: "Bearer " + token,
+              },
+            }
+          );
+
+          loggedInUser = profileResponse.data.user;
+        } catch (profileError) {
+          console.error(
+            "Unable to retrieve user profile:",
+            profileError
+          );
+        }
+      }
+
+      if (loggedInUser) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(loggedInUser)
+        );
+      }
+
+      console.log("Login successful");
+      console.log(
+        "Saved user:",
+        localStorage.getItem("user")
+      );
 
       setIsLoggedIn(true);
     } catch (error: any) {
@@ -57,13 +100,15 @@ function App() {
       await axios.post(
         "https://intellmeet-backend-u3jz.onrender.com/api/auth/register",
         {
-          name,
-          email,
-          password,
+          name: name,
+          email: email,
+          password: password,
         }
       );
 
-      alert("Registration successful! Please login.");
+      alert(
+        "Registration successful! Please login."
+      );
 
       setName("");
       setEmail("");
@@ -71,7 +116,10 @@ function App() {
 
       setIsLogin(true);
     } catch (error: any) {
-      console.error("Register error:", error);
+      console.error(
+        "Register error:",
+        error
+      );
 
       alert(
         error.response?.data?.message ||
@@ -90,17 +138,24 @@ function App() {
   return (
     <div className="auth-page">
 
-      {/* LEFT BRAND SECTION */}
       <div className="auth-brand">
 
         <div className="auth-brand-content">
 
           <div className="brand-logo">
-            <div className="brand-icon">IM</div>
-            <span>IntellMeet</span>
+
+            <div className="brand-icon">
+              IM
+            </div>
+
+            <span>
+              IntellMeet
+            </span>
+
           </div>
 
           <div className="brand-message">
+
             <h1>
               Smarter meetings.
               <br />
@@ -108,35 +163,69 @@ function App() {
             </h1>
 
             <p>
-              A modern meeting and collaboration platform designed
-              to help teams communicate, connect and work together.
+              A modern meeting and collaboration
+              platform designed to help teams
+              communicate, connect and work together.
             </p>
+
           </div>
 
           <div className="brand-features">
 
             <div className="brand-feature">
+
               <span>✓</span>
+
               <div>
-                <strong>Secure team meetings</strong>
-                <p>Connect with your team in a secure environment.</p>
+
+                <strong>
+                  Secure team meetings
+                </strong>
+
+                <p>
+                  Connect with your team in a
+                  secure environment.
+                </p>
+
               </div>
+
             </div>
 
             <div className="brand-feature">
+
               <span>✓</span>
+
               <div>
-                <strong>Real-time collaboration</strong>
-                <p>Chat and collaborate during meetings.</p>
+
+                <strong>
+                  Real-time collaboration
+                </strong>
+
+                <p>
+                  Chat and collaborate during meetings.
+                </p>
+
               </div>
+
             </div>
 
             <div className="brand-feature">
+
               <span>✓</span>
+
               <div>
-                <strong>AI-powered assistance</strong>
-                <p>Turn meeting discussions into useful insights.</p>
+
+                <strong>
+                  AI-powered assistance
+                </strong>
+
+                <p>
+                  Turn meeting discussions into
+                  useful insights.
+                </p>
+
               </div>
+
             </div>
 
           </div>
@@ -145,15 +234,20 @@ function App() {
 
       </div>
 
-      {/* RIGHT LOGIN SECTION */}
       <div className="auth-panel">
 
         <div className="auth-container">
 
-          {/* MOBILE LOGO */}
           <div className="mobile-brand">
-            <div className="brand-icon">IM</div>
-            <span>IntellMeet</span>
+
+            <div className="brand-icon">
+              IM
+            </div>
+
+            <span>
+              IntellMeet
+            </span>
+
           </div>
 
           <div className="auth-box">
@@ -161,7 +255,9 @@ function App() {
             <div className="auth-heading">
 
               <h2>
-                {isLogin ? "Welcome back" : "Create your account"}
+                {isLogin
+                  ? "Welcome back"
+                  : "Create your account"}
               </h2>
 
               <p>
@@ -173,42 +269,61 @@ function App() {
             </div>
 
             {!isLogin && (
+
               <div className="form-group">
-                <label>Name</label>
+
+                <label>
+                  Name
+                </label>
 
                 <input
                   type="text"
                   placeholder="Enter your name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) =>
+                    setName(e.target.value)
+                  }
                 />
+
               </div>
+
             )}
 
             <div className="form-group">
 
-              <label>Email address</label>
+              <label>
+                Email address
+              </label>
 
               <input
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) =>
+                  setEmail(e.target.value)
+                }
               />
 
             </div>
 
             <div className="form-group">
 
-              <label>Password</label>
+              <label>
+                Password
+              </label>
 
               <input
                 type="password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) =>
+                  setPassword(e.target.value)
+                }
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && isLogin) {
+                  if (
+                    e.key === "Enter" &&
+                    isLogin
+                  ) {
                     handleLogin();
                   }
                 }}
@@ -218,7 +333,11 @@ function App() {
 
             <button
               className="auth-button"
-              onClick={isLogin ? handleLogin : handleRegister}
+              onClick={
+                isLogin
+                  ? handleLogin
+                  : handleRegister
+              }
               disabled={loading}
             >
               {loading
@@ -233,9 +352,12 @@ function App() {
               {isLogin ? (
                 <>
                   Don't have an account?{" "}
+
                   <button
                     type="button"
-                    onClick={() => setIsLogin(false)}
+                    onClick={() =>
+                      setIsLogin(false)
+                    }
                   >
                     Create account
                   </button>
@@ -243,9 +365,12 @@ function App() {
               ) : (
                 <>
                   Already have an account?{" "}
+
                   <button
                     type="button"
-                    onClick={() => setIsLogin(true)}
+                    onClick={() =>
+                      setIsLogin(true)
+                    }
                   >
                     Sign in
                   </button>

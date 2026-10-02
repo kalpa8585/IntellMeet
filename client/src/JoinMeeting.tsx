@@ -27,7 +27,6 @@ function JoinMeeting() {
 
       setMeeting(response.data.meeting);
       setMessage("Meeting found successfully.");
-
     } catch (error: any) {
       console.error("Join Meeting Error:", error);
 
@@ -45,10 +44,40 @@ function JoinMeeting() {
   };
 
   if (enteredMeeting && meeting) {
+    // Get the logged-in user's name
+    const savedUser = localStorage.getItem("user");
+
+    let currentUserName = "Participant";
+
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+
+        currentUserName =
+          user.name ||
+          user.fullName ||
+          user.username ||
+          "Participant";
+      } catch (error) {
+        console.error(
+          "Unable to read saved user:",
+          error
+        );
+      }
+    }
+
+    console.log(
+      "Joining meeting as:",
+      currentUserName
+    );
+
     return (
       <MeetingRoom
         meetingId={meeting.meetingId}
-        meetingTitle={meeting.title}
+        userName={currentUserName}
+        onLeave={() => {
+          setEnteredMeeting(false);
+        }}
       />
     );
   }
@@ -74,7 +103,9 @@ function JoinMeeting() {
           type="text"
           placeholder="Example: INT-995505"
           value={meetingId}
-          onChange={(e) => setMeetingId(e.target.value)}
+          onChange={(e) =>
+            setMeetingId(e.target.value)
+          }
         />
 
         <button
@@ -96,24 +127,29 @@ function JoinMeeting() {
             <h2>Meeting Found</h2>
 
             <p>
-              <strong>Title:</strong> {meeting.title}
+              <strong>Title:</strong>{" "}
+              {meeting.title}
             </p>
 
             <p>
-              <strong>Date:</strong> {meeting.date}
+              <strong>Date:</strong>{" "}
+              {meeting.date}
             </p>
 
             <p>
-              <strong>Time:</strong> {meeting.time}
+              <strong>Time:</strong>{" "}
+              {meeting.time}
             </p>
 
             <p>
-              <strong>Duration:</strong> {meeting.duration} minutes
+              <strong>Duration:</strong>{" "}
+              {meeting.duration} minutes
             </p>
 
             <p>
               <strong>Description:</strong>{" "}
-              {meeting.description || "No description"}
+              {meeting.description ||
+                "No description"}
             </p>
 
             <p>
